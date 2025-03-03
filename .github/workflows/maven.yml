@@ -20,12 +20,6 @@ jobs:
           java-package: jdk
           cache: maven
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          cache: npm
-          cache-dependency-path: src/frontend/package-lock.json
-
       - name: Build project
         timeout-minutes: 15
         continue-on-error: true
