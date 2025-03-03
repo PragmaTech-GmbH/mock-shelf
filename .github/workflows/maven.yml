@@ -1,0 +1,55 @@
+name: Build & Test Maven Project
+on:
+  push:
+  schedule:
+    - cron: '0 15 * * *' # daily at 3pm
+jobs:
+  build-and-test:
+    timeout-minutes: 20
+    runs-on: ubuntu-24.04
+    name: Build Application
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup for JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          java-package: jdk
+          cache: maven
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          cache: npm
+          cache-dependency-path: src/frontend/package-lock.json
+
+      - name: Build project
+        timeout-minutes: 15
+        continue-on-error: true
+        run: ./mvnw verify --no-transfer-progress
+
+      - name: Flatten Selenide Screenshots and HTML source code on failure
+        if: ${{ failure() }}
+        working-directory: target
+        env:
+          SOURCE_FOLDER: selenide-screenshots
+          DESTINATION_FOLDER: aggregated-outcome
+        run: |
+          mkdir "$DESTINATION_FOLDER"
+
+          if [ -d "$SOURCE_FOLDER" ]; then
+            find "$SOURCE_FOLDER" -type f -name '*.png' -exec mv -i {} "$DESTINATION_FOLDER" \;
+            find "$SOURCE_FOLDER" -type f -name '*.html' -exec mv -i {} "$DESTINATION_FOLDER" \;
+          else
+            echo "No Selenide failure artifacts found in folder $SOURCE_FOLDER"
+          fi
+
+      - name: Archive Selenide outcome on failure
+        uses: actions/upload-artifact@v4
+        if: ${{ failure() }}
+        with:
+          name: selenide-failure-captures
+          path: target/aggregated-outcome
