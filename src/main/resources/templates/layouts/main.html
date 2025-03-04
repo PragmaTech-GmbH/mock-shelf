@@ -1,0 +1,89 @@
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:fragment="layout(title, content)">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:replace="${title}">MockShelf</title>
+  <link href="/css/tailwind.min.css" rel="stylesheet">
+  <style>
+    /* Additional custom styles */
+    .btn-primary {
+      @apply inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500;
+    }
+    .btn-secondary {
+      @apply inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500;
+    }
+    .btn-danger {
+      @apply inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500;
+    }
+    .form-group {
+      @apply mb-4;
+    }
+    .form-label {
+      @apply block text-sm font-medium text-gray-700 mb-1;
+    }
+    .form-input {
+      @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50;
+    }
+    .alert-success {
+      @apply p-4 bg-green-50 border-l-4 border-green-400 text-green-700;
+    }
+    .alert-danger {
+      @apply p-4 bg-red-50 border-l-4 border-red-400 text-red-700;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+<!-- Header/Navigation -->
+<header class="bg-white shadow-sm">
+  <div class="container mx-auto px-4 py-4">
+    <div class="flex justify-between items-center">
+      <!-- Logo/Brand -->
+      <div class="flex items-center">
+        <a href="/" class="text-xl font-bold text-blue-600">MockShelf</a>
+        <span class="text-xs ml-2 text-gray-500">Testing the Boundaries of Library Science</span>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="flex space-x-4">
+        <a href="/" class="text-gray-600 hover:text-gray-900">Home</a>
+        <a href="/books" class="text-gray-600 hover:text-gray-900">Books</a>
+        <div sec:authorize="hasRole('ROLE_USER')">
+          <a href="/loans/my-loans" class="text-gray-600 hover:text-gray-900">My Loans</a>
+        </div>
+        <div sec:authorize="hasRole('ROLE_ADMIN')">
+          <a href="/admin/dashboard" class="text-gray-600 hover:text-gray-900">Admin</a>
+        </div>
+        <div sec:authorize="isAuthenticated()">
+          <span sec:authentication="name" class="text-gray-600 mr-2"></span>
+          <a href="/logout" class="text-red-600 hover:text-red-800">Logout</a>
+        </div>
+        <div sec:authorize="!isAuthenticated()">
+          <a href="/login" class="text-gray-600 hover:text-gray-900">Login</a>
+        </div>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<!-- Main Content -->
+<div th:replace="${content}">
+  Main content goes here
+</div>
+
+<!-- Footer -->
+<footer class="bg-white border-t mt-auto">
+  <div class="container mx-auto px-4 py-6">
+    <div class="flex justify-between items-center">
+      <div class="text-sm text-gray-500">
+        &copy; 2023 MockShelf Library. All rights reserved.
+      </div>
+      <div class="text-sm text-gray-500">
+        A Spring Boot Testing Workshop Application
+      </div>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

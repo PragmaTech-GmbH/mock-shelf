@@ -1,28 +1,92 @@
-version: '3.8'
 services:
-  database:
-    image: postgres:17.2
-    environment:
-      - POSTGRES_USER=test
-      - POSTGRES_PASSWORD=test
+  postgres:
+    image: postgres:15
+    container_name: mockshelf-postgres
     ports:
       - "5432:5432"
-  keycloak:
-    # Starting with Keycloak 17, Keycloak is now powered by Quarkus and no longer WildFly
-    # This requires slight changes to the configuration, see https://www.keycloak.org/migration/migrating-to-quarkus
-    image: quay.io/keycloak/keycloak:18.0.2
-    command: [ 'start-dev --http-relative-path /auth --import-realm --auto-build' ]
     environment:
-      - KEYCLOAK_DB=dev-file
-      - KEYCLOAK_ADMIN=keycloak
-      - KEYCLOAK_ADMIN_PASSWORD=keycloak
-      - KEYCLOAK_FEATURES=scripts
+      POSTGRES_DB: mockshelf
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     volumes:
-      - type: bind
-        source: ./tmp
-        target: /opt/keycloak/data/import
-        read_only: true
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  activemq:
+    image: rmohr/activemq:5.15.9
+    container_name: mockshelf-activemq
     ports:
-      - "8888:8080"
-  artemis:
-    image: apache/activemq-artemis:2.39.0
+      - "61616:61616"  # JMS
+      - "8161:8161"    # Web console
+    environment:
+      ACTIVEMQ_ADMIN_LOGIN: admin
+      ACTIVEMQ_ADMIN_PASSWORD: admin
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8161"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0
+    container_name: mockshelf-keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: postgres
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "8081:8080"
+    command:
+      - start-dev
+      - --import-realm
+    volumes:
+      - ./docker/keycloak/mockshelf-realm.json:/opt/keycloak/data/import/mockshelf-realm.json
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  wiremock:
+    image: wiremock/wiremock:2.35.0
+    container_name: mockshelf-wiremock
+    ports:
+      - "8082:8080"
+    volumes:
+      - ./docker/wiremock/mappings:/home/wiremock/mappings
+      - ./docker/wiremock/__files:/home/wiremock/__files
+    command:
+      - --verbose
+      - --global-response-templating
+
+  maildev:
+    image: maildev/maildev:2.0.5
+    container_name: mockshelf-maildev
+    ports:
+      - "1025:1025"  # SMTP port
+      - "1080:1080"  # Web interface
+    environment:
+      MAILDEV_INCOMING_USER: user
+      MAILDEV_INCOMING_PASS: password
+
+  jobrunr-dashboard:
+    image: jobrunr/jobrunr-operations-dashboard:latest
+    container_name: mockshelf-jobrunr
+    environment:
+      JOBRUNR_DATABASE_TYPE: postgresql
+      JOBRUNR_DATABASE_URL: jdbc:postgresql://postgres:5432/mockshelf
+      JOBRUNR_DATABASE_USERNAME: postgres
+      JOBRUNR_DATABASE_PASSWORD: postgres
+      JOBRUNR_DATABASE_SCHEMA: jobrunr
+      JOBRUNR_DASHBOARD_PORT: 8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy

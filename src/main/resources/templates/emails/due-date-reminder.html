@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Book Due Soon - MockShelf Library</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      color: #1a73e8;
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    .footer {
+      margin-top: 30px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+      font-size: 14px;
+      color: #888;
+    }
+    .book-details {
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+      margin: 20px 0;
+    }
+    .due-date-warning {
+      color: #e65100;
+      font-weight: bold;
+    }
+    .button {
+      display: inline-block;
+      background-color: #1a73e8;
+      color: white;
+      padding: 10px 20px;
+      text-decoration: none;
+      border-radius: 4px;
+      margin-top: 15px;
+    }
+    .book-cover {
+      float: left;
+      margin-right: 15px;
+      width: 80px;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+<div class="header">
+  <img src="cid:logo" alt="MockShelf Library" style="height: 40px;"/>
+  MockShelf Library
+</div>
+
+<p>Dear <span th:text="${loan.user.fullName}">User</span>,</p>
+
+<p>This is a friendly reminder that the following book is due soon:</p>
+
+<div class="book-details">
+  <img th:if="${loan.book.coverImageUrl}" th:src="${loan.book.coverImageUrl}" class="book-cover" alt="Book cover"/>
+  <div>
+    <h3 th:text="${loan.book.title}">Book Title</h3>
+    <p><strong>Author:</strong> <span th:text="${loan.book.author}">Author Name</span></p>
+    <p><strong>Due Date:</strong> <span class="due-date-warning" th:text="${#temporals.format(loan.dueDate, 'EEEE, MMMM d, yyyy')}">January 1, 2023</span>
+      (<span class="due-date-warning" th:text="${daysUntilDue}">3</span> days from now)</p>
+    <p><strong>ISBN:</strong> <span th:text="${loan.book.isbn}">1234567890</span></p>
+  </div>
+  <div style="clear: both;"></div>
+</div>
+
+<p>Please return the book by the due date to avoid late fees.</p>
+
+<a th:href="${accountUrl}" class="button">View My Account</a>
+
+<p>If you've already returned the book, please disregard this notice.</p>
+
+<p>Thank you for using MockShelf Library.</p>
+
+<p>Best regards,<br/>
+  The MockShelf Library Team</p>
+
+<div class="footer">
+  <p>This is an automated message. Please do not reply to this email.</p>
+  <p>MockShelf Library • Testing the Boundaries of Library Science</p>
+</div>
+</body>
+</html>

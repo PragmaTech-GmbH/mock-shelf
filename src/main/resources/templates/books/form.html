@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout(~{::title}, ~{::main})}">
+<head>
+  <title th:text="${isNew ? 'Add New Book' : 'Edit Book'} + ' | MockShelf'">Book Form | MockShelf</title>
+</head>
+<body>
+<main>
+  <div class="container mx-auto px-4 py-8">
+    <!-- Back Button -->
+    <div class="mb-4">
+      <a th:href="@{/books}" class="text-blue-600 hover:text-blue-800 flex items-center">
+        <span class="mr-1">←</span> Back to Books
+      </a>
+    </div>
+
+    <!-- Page Header -->
+    <h1 class="text-3xl font-semibold text-gray-800 mb-6"
+        th:text="${isNew ? 'Add New Book' : 'Edit Book'}">Book Form</h1>
+
+    <!-- Form -->
+    <div class="bg-white shadow-md rounded-lg overflow-hidden p-6">
+      <form th:action="${isNew ? '/books/new' : '/books/' + book.id + '/edit'}"
+            th:object="${book}" method="post" class="space-y-6">
+
+        <!-- Hidden ID field for edits -->
+        <input type="hidden" th:field="*{id}" th:if="${!isNew}">
+
+        <!-- ISBN Field -->
+        <div class="form-group">
+          <label for="isbn" class="form-label">ISBN *</label>
+          <input type="text" th:field="*{isbn}" id="isbn" class="form-input"
+                 placeholder="Enter ISBN (10 or 13 digits)" required>
+          <div th:if="${#fields.hasErrors('isbn')}" class="text-red-500 text-xs mt-1"
+               th:errors="*{isbn}">ISBN Error</div>
+        </div>
+
+        <!-- Title Field -->
+        <div class="form-group">
+          <label for="title" class="form-label">Title *</label>
+          <input type="text" th:field="*{title}" id="title" class="form-input"
+                 placeholder="Enter book title" required>
+          <div th:if="${#fields.hasErrors('title')}" class="text-red-500 text-xs mt-1"
+               th:errors="*{title}">Title Error</div>
+        </div>
+
+        <!-- Author Field -->
+        <div class="form-group">
+          <label for="author" class="form-label">Author *</label>
+          <input type="text" th:field="*{author}" id="author" class="form-input"
+                 placeholder="Enter author name" required>
+          <div th:if="${#fields.hasErrors('author')}" class="text-red-500 text-xs mt-1"
+               th:errors="*{author}">Author Error</div>
+        </div>
+
+        <!-- Publisher Field -->
+        <div class="form-group">
+          <label for="publisher" class="form-label">Publisher</label>
+          <input type="text" th:field="*{publisher}" id="publisher" class="form-input"
+                 placeholder="Enter publisher name">
+        </div>
+
+        <!-- Publication Date Field -->
+        <div class="form-group">
+          <label for="publicationDate" class="form-label">Publication Date</label>
+          <input type="date" th:field="*{publicationDate}" id="publicationDate" class="form-input">
+        </div>
+
+        <!-- Description Field -->
+        <div class="form-group">
+          <label for="description" class="form-label">Description</label>
+          <textarea th:field="*{description}" id="description" rows="4" class="form-input"
+                    placeholder="Enter book description"></textarea>
+        </div>
+
+        <!-- Cover Image URL Field -->
+        <div class="form-group">
+          <label for="coverImageUrl" class="form-label">Cover Image URL</label>
+          <input type="text" th:field="*{coverImageUrl}" id="coverImageUrl" class="form-input"
+                 placeholder="Enter URL to book cover image">
+          <div class="mt-2" th:if="*{coverImageUrl}">
+            <img th:src="*{coverImageUrl}" alt="Book cover preview" class="h-32 rounded shadow-sm">
+          </div>
+        </div>
+
+        <!-- Page Count Field -->
+        <div class="form-group">
+          <label for="pageCount" class="form-label">Page Count</label>
+          <input type="number" th:field="*{pageCount}" id="pageCount" class="form-input"
+                 placeholder="Enter number of pages">
+        </div>
+
+        <!-- Language Field -->
+        <div class="form-group">
+          <label for="language" class="form-label">Language</label>
+          <input type="text" th:field="*{language}" id="language" class="form-input"
+                 placeholder="Enter language (e.g., English)">
+        </div>
+
+        <!-- Category Field -->
+        <div class="form-group">
+          <label for="category" class="form-label">Category</label>
+          <input type="text" th:field="*{category}" id="category" class="form-input"
+                 placeholder="Enter book category (e.g., Fiction, Science)">
+        </div>
+
+        <!-- Availability Field -->
+        <div class="form-group">
+          <div class="flex items-center">
+            <input type="checkbox" th:field="*{available}" id="available" class="mr-2">
+            <label for="available" class="text-gray-700">Available for borrowing</label>
+          </div>
+        </div>
+
+        <!-- Form Buttons -->
+        <div class="flex space-x-2">
+          <button type="submit" class="btn-primary">Save</button>
+          <a th:href="@{/books}" class="btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</main>
+</body>
+</html>
