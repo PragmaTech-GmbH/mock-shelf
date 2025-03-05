@@ -1,20 +1,14 @@
-package de.rieckpil.book;
+package de.rieckpil.library;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import com.mockshelf.dto.BookCreateRequest;
-import com.mockshelf.exception.BookAlreadyExistsException;
-import com.mockshelf.exception.BookNotFoundException;
-import com.mockshelf.exception.IsbnLookupException;
-import com.mockshelf.model.Book;
-import com.mockshelf.repository.BookLoanRepository;
-import com.mockshelf.service.BookService;
+import de.rieckpil.library.model.Book;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -27,12 +21,17 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/books")
-@RequiredArgsConstructor
-@Slf4j
 public class BookController {
 
   private final BookService bookService;
   private final BookLoanRepository bookLoanRepository;
+
+  private static final Logger LOG = LoggerFactory.getLogger(BookController.class);
+
+  public BookController(BookService bookService, BookLoanRepository bookLoanRepository) {
+    this.bookService = bookService;
+    this.bookLoanRepository = bookLoanRepository;
+  }
 
   @GetMapping
   public String listBooks(
@@ -203,7 +202,7 @@ public class BookController {
       }
 
       // Do the lookup and create the book
-      Book book = bookService.lookupAndCreateBook(request.getIsbn()).block();
+      Book book = bookService.lookupAndCreateBook(request.getIsbn()).get();
 
       redirectAttributes.addFlashAttribute(
           "message", "Book information fetched and saved successfully!");
@@ -216,7 +215,7 @@ public class BookController {
       model.addAttribute("error", e.getMessage());
       return "books/isbn-lookup";
     } catch (Exception e) {
-      log.error("Unexpected error during ISBN lookup: {}", e.getMessage(), e);
+      LOG.error("Unexpected error during ISBN lookup: {}", e.getMessage(), e);
       model.addAttribute("error", "An unexpected error occurred: " + e.getMessage());
       return "books/isbn-lookup";
     }

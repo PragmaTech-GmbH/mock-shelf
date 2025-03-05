@@ -5,19 +5,11 @@ import java.util.UUID;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "book_loans")
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class BookLoan {
 
   @Id
@@ -46,7 +38,6 @@ public class BookLoan {
   private ZonedDateTime returnDate;
 
   @Enumerated(EnumType.STRING)
-  @Builder.Default
   private LoanStatus status = LoanStatus.ACTIVE;
 
   @CreationTimestamp
@@ -66,5 +57,85 @@ public class BookLoan {
     return returnDate == null
         && ZonedDateTime.now().isAfter(dueDate)
         && status != LoanStatus.RETURNED;
+  }
+
+  UUID getId() {
+    return id;
+  }
+
+  void setId(UUID id) {
+    this.id = id;
+  }
+
+  Book getBook() {
+    return book;
+  }
+
+  void setBook(Book book) {
+    this.book = book;
+  }
+
+  LibraryUser getUser() {
+    return user;
+  }
+
+  void setUser(LibraryUser user) {
+    this.user = user;
+  }
+
+  LibraryLocation getPickupLocation() {
+    return pickupLocation;
+  }
+
+  void setPickupLocation(LibraryLocation pickupLocation) {
+    this.pickupLocation = pickupLocation;
+  }
+
+  ZonedDateTime getLoanDate() {
+    return loanDate;
+  }
+
+  void setLoanDate(ZonedDateTime loanDate) {
+    this.loanDate = loanDate;
+  }
+
+  ZonedDateTime getDueDate() {
+    return dueDate;
+  }
+
+  void setDueDate(ZonedDateTime dueDate) {
+    this.dueDate = dueDate;
+  }
+
+  ZonedDateTime getReturnDate() {
+    return returnDate;
+  }
+
+  void setReturnDate(ZonedDateTime returnDate) {
+    this.returnDate = returnDate;
+  }
+
+  LoanStatus getStatus() {
+    return status;
+  }
+
+  void setStatus(LoanStatus status) {
+    this.status = status;
+  }
+
+  ZonedDateTime getCreatedAt() {
+    return createdAt;
+  }
+
+  void setCreatedAt(ZonedDateTime createdAt) {
+    this.createdAt = createdAt;
+  }
+
+  ZonedDateTime getUpdatedAt() {
+    return updatedAt;
+  }
+
+  void setUpdatedAt(ZonedDateTime updatedAt) {
+    this.updatedAt = updatedAt;
   }
 }

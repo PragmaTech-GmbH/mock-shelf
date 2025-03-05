@@ -1,28 +1,25 @@
-package de.rieckpil.book;
+package de.rieckpil.library;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.mockshelf.exception.BookAlreadyExistsException;
-import com.mockshelf.exception.BookNotFoundException;
-import com.mockshelf.model.Book;
-import com.mockshelf.repository.BookRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import de.rieckpil.library.model.Book;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import reactor.core.publisher.Mono;
 
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class BookService {
 
   private final BookRepository bookRepository;
   private final IsbnLookupService isbnLookupService;
+
+  public BookService(BookRepository bookRepository, IsbnLookupService isbnLookupService) {
+    this.bookRepository = bookRepository;
+    this.isbnLookupService = isbnLookupService;
+  }
 
   /**
    * Get a book by ID
@@ -189,11 +186,11 @@ public class BookService {
    * @return The newly created book
    */
   @Transactional
-  public Mono<Book> lookupAndCreateBook(String isbn) {
+  public Optional<Book> lookupAndCreateBook(String isbn) {
     // Check if book with ISBN already exists
     Optional<Book> existingBook = bookRepository.findByIsbn(isbn);
     if (existingBook.isPresent()) {
-      return Mono.error(new BookAlreadyExistsException("Book already exists with ISBN: " + isbn));
+      throw new BookAlreadyExistsException("Book already exists with ISBN: " + isbn);
     }
 
     // Lookup book by ISBN

@@ -1,4 +1,4 @@
-package de.rieckpil;
+package de.rieckpil.library.configuration;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

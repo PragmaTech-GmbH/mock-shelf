@@ -2,7 +2,7 @@ spring:
   application:
     name: mock-shelf
   datasource:
-    url: ${JDBC_DATABASE_URL:jdbc:postgresql://localhost:5432/mockshelf}
+    url: ${JDBC_DATABASE_URL:jdbc:postgresql://localhost:5432/mock-shelf}
     username: ${JDBC_DATABASE_USERNAME:postgres}
     password: ${JDBC_DATABASE_PASSWORD:postgres}
   jpa:
@@ -15,8 +15,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}
-          jwk-set-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/certs
+          issuer-uri: http://localhost:8888/auth/realms/spring
 
   # Flyway configuration
   flyway:

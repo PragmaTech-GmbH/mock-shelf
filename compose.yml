@@ -1,11 +1,11 @@
 services:
   postgres:
     image: postgres:15
-    container_name: mockshelf-postgres
+    container_name: mock-shelf-postgres
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: mockshelf
+      POSTGRES_DB: mock-shelf
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     volumes:
@@ -18,7 +18,7 @@ services:
 
   activemq:
     image: rmohr/activemq:5.15.9
-    container_name: mockshelf-activemq
+    container_name: mock-shelf-activemq
     ports:
       - "61616:61616"  # JMS
       - "8161:8161"    # Web console
@@ -33,7 +33,7 @@ services:
 
   keycloak:
     image: quay.io/keycloak/keycloak:22.0
-    container_name: mockshelf-keycloak
+    container_name: mock-shelf-keycloak
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
@@ -55,7 +55,7 @@ services:
 
   wiremock:
     image: wiremock/wiremock:2.35.0
-    container_name: mockshelf-wiremock
+    container_name: mock-shelf-wiremock
     ports:
       - "8082:8080"
     volumes:
@@ -67,10 +67,10 @@ services:
 
   maildev:
     image: maildev/maildev:2.0.5
-    container_name: mockshelf-maildev
+    container_name: mock-shelf-maildev
     ports:
       - "1025:1025"  # SMTP port
-      - "1080:1080"  # Web interface
+      - "10080:1080"  # Web interface
     environment:
       MAILDEV_INCOMING_USER: user
       MAILDEV_INCOMING_PASS: password

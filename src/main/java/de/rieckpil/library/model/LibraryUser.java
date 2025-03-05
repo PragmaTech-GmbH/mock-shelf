@@ -40,4 +40,76 @@ public class LibraryUser {
   public String getFullName() {
     return firstName + " " + lastName;
   }
+
+  UUID getId() {
+    return id;
+  }
+
+  void setId(UUID id) {
+    this.id = id;
+  }
+
+  String getKeycloakId() {
+    return keycloakId;
+  }
+
+  void setKeycloakId(String keycloakId) {
+    this.keycloakId = keycloakId;
+  }
+
+  String getFirstName() {
+    return firstName;
+  }
+
+  void setFirstName(String firstName) {
+    this.firstName = firstName;
+  }
+
+  String getLastName() {
+    return lastName;
+  }
+
+  void setLastName(String lastName) {
+    this.lastName = lastName;
+  }
+
+  String getEmail() {
+    return email;
+  }
+
+  void setEmail(String email) {
+    this.email = email;
+  }
+
+  String getPhone() {
+    return phone;
+  }
+
+  void setPhone(String phone) {
+    this.phone = phone;
+  }
+
+  String getAddress() {
+    return address;
+  }
+
+  void setAddress(String address) {
+    this.address = address;
+  }
+
+  ZonedDateTime getRegisteredAt() {
+    return registeredAt;
+  }
+
+  void setRegisteredAt(ZonedDateTime registeredAt) {
+    this.registeredAt = registeredAt;
+  }
+
+  Boolean getAdmin() {
+    return isAdmin;
+  }
+
+  void setAdmin(Boolean admin) {
+    isAdmin = admin;
+  }
 }
