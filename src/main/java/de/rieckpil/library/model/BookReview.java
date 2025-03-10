@@ -39,7 +39,7 @@ public class BookReview {
     this.id = id;
   }
 
-  Book getBook() {
+  public Book getBook() {
     return book;
   }
 
@@ -47,7 +47,7 @@ public class BookReview {
     this.book = book;
   }
 
-  LibraryUser getUser() {
+  public LibraryUser getUser() {
     return user;
   }
 

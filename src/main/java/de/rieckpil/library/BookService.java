@@ -199,4 +199,17 @@ public class BookService {
         .map(isbnLookupService::convertToBookEntity)
         .map(bookRepository::save);
   }
+
+  Long countAllBooks() {
+    return null;
+  }
+
+  Long countAvailableBooks() {
+
+    return null;
+  }
+
+  List<Book> getRecentlyAddedBooks(int amount) {
+    return null;
+  }
 }

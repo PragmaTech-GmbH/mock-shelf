@@ -41,7 +41,7 @@ public class LibraryUser {
     return firstName + " " + lastName;
   }
 
-  UUID getId() {
+  public UUID getId() {
     return id;
   }
 
