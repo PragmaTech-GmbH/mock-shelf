@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout(~{::title}, ~{::main})}">
+<head>
+  <title>Borrow Book | MockShelf</title>
+</head>
+<body>
+<main>
+  <div class="container mx-auto px-4 py-8">
+    <!-- Back Button -->
+    <div class="mb-4">
+      <a th:href="@{/books}" class="text-blue-600 hover:text-blue-800 flex items-center">
+        <span class="mr-1">←</span> Back to Books
+      </a>
+    </div>
+
+    <!-- Page Header -->
+    <h1 class="text-3xl font-semibold text-gray-800 mb-6">Borrow Book</h1>
+
+    <!-- Alerts -->
+    <div th:if="${error}"
+         x-data="{ show: true }"
+         x-show="show"
+         class="alert-danger mb-6"
+         role="alert">
+      <div class="flex justify-between">
+        <span th:text="${error}"></span>
+        <button type="button" @click="show = false" class="text-red-700">×</button>
+      </div>
+    </div>
+
+    <!-- Book Information -->
+    <div class="bg-white shadow-md rounded-lg overflow-hidden p-6 mb-6">
+      <div class="flex">
+        <!-- Book Cover -->
+        <div class="flex-shrink-0 mr-6">
+          <img th:if="${book.coverImageUrl}" th:src="${book.coverImageUrl}"
+               alt="Book cover" class="h-48 object-cover rounded shadow-md">
+          <div th:unless="${book.coverImageUrl}"
+               class="h-48 w-32 bg-gray-200 flex items-center justify-center text-gray-400 rounded shadow-md">
+            <span>No Cover</span>
+          </div>
+        </div>
+
+        <!-- Book Details -->
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800 mb-2" th:text="${book.title}">Book Title</h2>
+          <p class="text-xl text-gray-600 mb-4" th:text="${book.author}">Author Name</p>
+
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <h3 class="text-sm font-semibold text-gray-500 uppercase">ISBN</h3>
+              <p class="text-gray-800" th:text="${book.isbn}">1234567890</p>
+            </div>
+            <div th:if="${book.publisher}">
+              <h3 class="text-sm font-semibold text-gray-500 uppercase">Publisher</h3>
+              <p class="text-gray-800" th:text="${book.publisher}">Publisher</p>
+            </div>
+            <div th:if="${book.publicationDate}">
+              <h3 class="text-sm font-semibold text-gray-500 uppercase">Published</h3>
+              <p class="text-gray-800" th:text="${#temporals.format(book.publicationDate, 'MMMM d, yyyy')}">January 1, 2020</p>
+            </div>
+            <div>
+              <h3 class="text-sm font-semibold text-gray-500 uppercase">Status</h3>
+              <span th:if="${book.available}" class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    Available
+                                </span>
+              <span th:unless="${book.available}" class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                    Not Available
+                                </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loan Form with due date calculation using Alpine.js -->
+    <div class="bg-white shadow-md rounded-lg overflow-hidden p-6"
+         x-data="{
+                     loanDays: 14,
+                     startDate: new Date().toISOString().slice(0, 10),
+                     pickupLocation: '',
+                     get dueDate() {
+                         const date = new Date(this.startDate);
+                         date.setDate(date.getDate() + parseInt(this.loanDays));
+                         return date.toISOString().slice(0, 10);
+                     }
+                 }">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Loan Details</h2>
+
+      <form hx-post="/loans/create"
+            hx-headers='{"X-CSRF-TOKEN": "[[${_csrf.token}]]"}'
+            hx-push-url="false"
+            hx-target="#loan-confirmation"
+            @submit="$dispatch('show-confirmation')"
+            class="space-y-6">
+
+        <input type="hidden" name="bookId" th:value="${book.id}">
+
+        <!-- Loan Period -->
+        <div class="form-group">
+          <label for="loanDays" class="form-label">Loan Period (days)</label>
+          <div class="flex items-center space-x-2">
+            <input type="range" x-model="loanDays" min="7" max="30" step="7" class="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer">
+            <span x-text="loanDays" class="text-gray-700 font-medium w-10 text-center"></span>
+          </div>
+        </div>
+
+        <!-- Loan Start Date -->
+        <div class="form-group">
+          <label for="loanDate" class="form-label">Loan Start Date</label>
+          <input type="date" id="loanDate" name="loanDate" x-model="startDate" class="form-input" min="{{ new Date().toISOString().slice(0, 10) }}" required>
+        </div>
+
+        <!-- Calculated Due Date (read-only) -->
+        <div class="form-group">
+          <label for="dueDate" class="form-label">Due Date</label>
+          <input type="date" id="dueDate" name="dueDate" x-model="dueDate" class="form-input bg-gray-50" readonly>
+          <p class="text-sm text-gray-500 mt-1">Books must be returned by this date to avoid late fees.</p>
+        </div>
+
+        <!-- Pickup Location -->
+        <div class="form-group">
+          <label for="pickupLocationId" class="form-label">Pickup Location</label>
+          <select id="pickupLocationId" name="pickupLocationId" x-model="pickupLocation" class="form-input" required>
+            <option value="">Select a pickup location</option>
+            <option th:each="location : ${locations}"
+                    th:value="${location.id}"
+                    th:text="${location.name}">Library Location</option>
+          </select>
+        </div>
+
+        <!-- Form Buttons -->
+        <div class="flex justify-end space-x-3">
+          <button type="submit"
+                  class="btn-primary"
+                  x-bind:disabled="!pickupLocation"
+                  x-bind:class="{'opacity-50 cursor-not-allowed': !pickupLocation}">
+            Borrow Book
+          </button>
+          <a th:href="@{/books/{id}(id=${book.id})}" class="btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Confirmation Modal with Alpine.js -->
+    <div x-data="{ showConfirmation: false }"
+         @show-confirmation.window="showConfirmation = true"
+         x-show="showConfirmation"
+         class="fixed inset-0 overflow-y-auto"
+         x-cloak
+         style="display: none;">
+      <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+          <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+        </div>
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+          <div id="loan-confirmation" class="bg-white p-6">
+            <!-- Content will be loaded by HTMX -->
+            <div class="flex justify-center">
+              <svg class="animate-spin h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

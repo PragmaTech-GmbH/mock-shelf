@@ -1,0 +1,303 @@
+<!-- src/main/resources/templates/reviews/fragments.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns:x-bind="http://www.w3.org/1999/xhtml">
+<body>
+<!-- Review Form Fragment -->
+<div th:fragment="review-form">
+  <div class="bg-white p-6 rounded-lg shadow-md">
+    <h3 class="text-xl font-bold mb-4" th:text="${editing ? 'Edit Your Review' : 'Write a Review'}">
+      Write a Review
+    </h3>
+
+    <div class="flex mb-4">
+      <img th:if="${book.coverImageUrl}" th:src="${book.coverImageUrl}"
+           class="w-16 h-24 object-cover mr-4 rounded shadow-sm">
+      <div>
+        <p class="font-bold" th:text="${book.title}">Book Title</p>
+        <p class="text-sm text-gray-700" th:text="${book.author}">Author</p>
+      </div>
+    </div>
+
+    <form hx-post="/reviews/submit"
+          hx-target="#reviews-container"
+          x-data="{ rating: 0, comment: '' }"
+          x-init="rating = [[${review?.rating ?: 0}]]; comment = [[${review?.comment ?: ''}]]"
+          class="space-y-4">
+
+      <input type="hidden" name="bookId" th:value="${book.id}">
+
+      <!-- Star Rating -->
+      <div class="form-group">
+        <label class="form-label">Your Rating</label>
+        <div class="flex items-center">
+          <template x-for="star in [1, 2, 3, 4, 5]">
+            <button type="button"
+                    @click="rating = star"
+                    class="text-2xl focus:outline-none"
+                    :class="star <= rating ? 'text-yellow-400' : 'text-gray-300'">
+              ★
+            </button>
+          </template>
+          <input type="hidden" name="rating" x-model="rating">
+        </div>
+        <p x-show="rating === 0" class="text-red-500 text-xs mt-1">Please select a rating</p>
+      </div>
+
+      <!-- Review Comment -->
+      <div class="form-group">
+        <label for="comment" class="form-label">Your Review</label>
+        <textarea id="comment" name="comment" x-model="comment" rows="4" class="form-input"></textarea>
+        <p class="text-xs text-gray-500 mt-1">
+          <span x-text="comment.length"></span>/1000 characters
+        </p>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="flex justify-end">
+        <button type="submit"
+                class="btn-primary"
+                x-bind:disabled="rating === 0"
+                x-bind:class="{'opacity-50 cursor-not-allowed': rating === 0}">
+          Submit Review
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Reviews Section Fragment -->
+<div th:fragment="reviews-section" id="reviews-container">
+  <div class="bg-white p-6 rounded-lg shadow-md">
+    <div class="flex justify-between items-center mb-6">
+      <h3 class="text-xl font-bold">Customer Reviews</h3>
+
+      <!-- Review Button -->
+      <div sec:authorize="isAuthenticated()" th:if="${!userHasReviewed}">
+        <button class="btn-primary text-sm"
+                hx-get="@{/reviews/create/{bookId}(bookId=${book.id})}"
+                hx-target="#review-form-container"
+                @click="showReviewForm = true">
+          Write a Review
+        </button>
+      </div>
+      <div sec:authorize="isAuthenticated()" th:if="${userHasReviewed}">
+        <button class="btn-secondary text-sm"
+                hx-get="@{/reviews/create/{bookId}(bookId=${book.id})}"
+                hx-target="#review-form-container"
+                @click="showReviewForm = true">
+          Edit Your Review
+        </button>
+      </div>
+      <div sec:authorize="!isAuthenticated()">
+        <a th:href="@{/login}" class="btn-primary text-sm">
+          Sign in to Review
+        </a>
+      </div>
+    </div>
+
+    <!-- Rating Summary -->
+    <div class="flex items-center mb-6" th:if="${averageRating != null}">
+      <div class="text-5xl font-bold text-gray-900 mr-4" th:text="${#numbers.formatDecimal(averageRating, 1, 1)}">4.5
+      </div>
+      <div>
+        <div class="flex text-yellow-400 text-xl">
+                        <span th:each="i : ${#numbers.sequence(1, 5)}"
+                              th:class="${i <= averageRating ? 'text-yellow-400' : 'text-gray-300'}">★</span>
+        </div>
+        <div class="text-sm text-gray-500"
+             th:text="${reviews.size()} + ' review' + (${reviews.size() != 1 ? 's' : ''})">123 reviews
+        </div>
+      </div>
+    </div>
+
+    <!-- Rating Distribution -->
+    <div class="mb-6" th:if="${ratingDistribution != null && !ratingDistribution.isEmpty()}">
+      <h4 class="text-sm font-semibold text-gray-700 mb-2">Rating Distribution</h4>
+      <div class="space-y-2">
+        <div th:each="i : ${#numbers.sequence(5, 1, -1)}" class="flex items-center">
+          <div class="w-8 text-right mr-2 text-sm" th:text="${i} + ' ★'">5 ★</div>
+          <div class="flex-grow h-3 bg-gray-200 rounded-full overflow-hidden">
+            <div th:if="${ratingDistribution.containsKey(i)}"
+                 class="h-full bg-yellow-400 rounded-full"
+                 th:style="'width: ' + ${ratingDistribution.get(i) * 100 / reviews.size()} + '%'">
+            </div>
+          </div>
+          <div class="w-12 text-right ml-2 text-sm text-gray-500"
+               th:text="${ratingDistribution.containsKey(i) ? ratingDistribution.get(i) : 0}">123
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reviews List -->
+    <div th:if="${!reviews.isEmpty()}" class="space-y-6">
+      <!-- Highlight newly added review if present -->
+      <div th:if="${newReview}" th:id="'review-' + ${newReview.id}"
+           class="p-4 border rounded-lg border-blue-200 bg-blue-50">
+        <div th:replace="~{::review-content(${newReview})}"></div>
+      </div>
+
+      <!-- Other reviews -->
+      <div th:each="review : ${reviews}" th:if="${newReview == null || review.id != newReview.id}"
+           th:id="'review-' + ${review.id}" class="p-4 border rounded-lg">
+        <div th:replace="~{::review-content(${review})}"></div>
+      </div>
+    </div>
+
+    <!-- No Reviews Message -->
+    <div th:if="${reviews.isEmpty()}" class="text-center py-8">
+      <p class="text-gray-500">No reviews yet. Be the first to review this book!</p>
+    </div>
+  </div>
+</div>
+
+<!-- Review Content Template (used within reviews section) -->
+<div th:fragment="review-content(review)">
+  <div class="flex justify-between">
+    <div class="flex items-center">
+      <span class="font-medium" th:text="${review.user.fullName}">Reviewer Name</span>
+      <span class="text-gray-400 mx-2">•</span>
+      <span class="text-gray-500 text-sm"
+            th:text="${#temporals.format(review.createdAt, 'MMM d, yyyy')}">Jan 1, 2023</span>
+    </div>
+
+    <!-- Review Actions (for owner or admin) -->
+    <div th:if="${#authentication.principal.username == review.user.keycloakId}" class="flex">
+      <button hx-get="@{/reviews/create/{bookId}(bookId=${review.book.id})}"
+              hx-target="#review-form-container"
+              @click="showReviewForm = true"
+              class="text-gray-500 hover:text-blue-500 mr-3">
+        Edit
+      </button>
+      <button hx-delete="@{/reviews/{reviewId}(reviewId=${review.id})}"
+              hx-target="#reviews-container"
+              class="text-gray-500 hover:text-red-500">
+        Delete
+      </button>
+    </div>
+
+    <!-- Admin Tools -->
+    <div sec:authorize="hasRole('ROLE_ADMIN')"
+         th:unless="${#authentication.principal.username == review.user.keycloakId}" class="flex">
+      <button hx-post="@{/reviews/{reviewId}/flag(reviewId=${review.id})}"
+              hx-target="closest div"
+              class="text-gray-500 hover:text-yellow-500">
+        Flag
+      </button>
+    </div>
+  </div>
+
+  <!-- Star Rating Display -->
+  <div class="flex text-yellow-400 my-2">
+            <span th:each="i : ${#numbers.sequence(1, 5)}"
+                  th:class="${i <= review.rating ? 'text-yellow-400' : 'text-gray-300'}">★</span>
+  </div>
+
+  <!-- Review Comment -->
+  <p class="text-gray-700 mt-2" th:text="${review.comment}">
+    Review comment goes here...
+  </p>
+
+  <!-- Helpful Votes -->
+  <div th:id="'review-votes-' + ${review.id}" class="mt-4 flex items-center">
+    <div class="text-sm text-gray-500 mr-4">
+      <span th:text="${review.helpfulVotes ?: 0}">0</span> people found this helpful
+    </div>
+    <div sec:authorize="isAuthenticated()" class="flex space-x-3">
+      <button hx-post="@{/reviews/{reviewId}/vote(reviewId=${review.id}, helpful=true)}"
+              hx-target="'#review-votes-' + ${review.id}"
+              class="text-xs text-gray-600 hover:text-blue-600 border border-gray-300 rounded-full px-3 py-1">
+        Helpful
+      </button>
+      <button hx-post="@{/reviews/{reviewId}/vote(reviewId=${review.id}, helpful=false)}"
+              hx-target="'#review-votes-' + ${review.id}"
+              class="text-xs text-gray-600 hover:text-red-600 border border-gray-300 rounded-full px-3 py-1">
+        Not Helpful
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Review Votes Fragment -->
+<div th:fragment="review-votes" th:id="'review-votes-' + ${review.id}" class="mt-4 flex items-center">
+  <div class="text-sm text-gray-500 mr-4">
+    <span th:text="${review.helpfulVotes ?: 0}">0</span> people found this helpful
+  </div>
+  <div sec:authorize="isAuthenticated()" class="flex space-x-3">
+    <button hx-post="@{/reviews/{reviewId}/vote(reviewId=${review.id}, helpful=true)}"
+            hx-target="'#review-votes-' + ${review.id}"
+            class="text-xs text-gray-600 hover:text-blue-600 border border-gray-300 rounded-full px-3 py-1">
+      Helpful
+    </button>
+    <button hx-post="@{/reviews/{reviewId}/vote(reviewId=${review.id}, helpful=false)}"
+            hx-target="'#review-votes-' + ${review.id}"
+            class="text-xs text-gray-600 hover:text-red-600 border border-gray-300 rounded-full px-3 py-1">
+      Not Helpful
+    </button>
+  </div>
+</div>
+
+<!-- Review Error Fragment -->
+<div th:fragment="review-error">
+  <div class="rounded-md bg-red-50 p-4">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                clip-rule="evenodd"/>
+        </svg>
+      </div>
+      <div class="ml-3">
+        <p class="text-sm font-medium text-red-800" th:text="${error}">
+          Error with your review.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Reviews Fragment (for home/dashboard) -->
+<div th:fragment="recent-reviews">
+  <div class="bg-white p-4 rounded-lg shadow">
+    <h3 class="text-lg font-medium text-gray-900 mb-3">Recent Reviews</h3>
+
+    <div class="space-y-4">
+      <div th:each="review : ${reviews}" class="border-b pb-3 last:border-0">
+        <div class="flex justify-between items-start">
+          <div class="flex items-start">
+            <img th:if="${review.book.coverImageUrl}" th:src="${review.book.coverImageUrl}"
+                 class="h-12 w-8 object-cover mr-3 rounded shadow-sm">
+            <div>
+              <a th:href="@{/books/{id}(id=${review.book.id})}"
+                 class="text-sm font-medium text-blue-600 hover:text-blue-900">
+                <span th:text="${review.book.title}">Book Title</span>
+              </a>
+              <div class="text-xs text-gray-500" th:text="${review.book.author}">Author</div>
+              <div class="flex text-yellow-400 text-xs my-1">
+                                    <span th:each="i : ${#numbers.sequence(1, 5)}"
+                                          th:class="${i <= review.rating ? 'text-yellow-400' : 'text-gray-300'}">★</span>
+              </div>
+              <div class="text-xs text-gray-600 italic mt-1" th:text="${#strings.abbreviate(review.comment, 100)}">
+                Review comment goes here...
+              </div>
+            </div>
+          </div>
+          <div class="text-xs text-gray-500" th:text="${#temporals.format(review.createdAt, 'MMM d')}">Jan 1</div>
+        </div>
+      </div>
+
+      <div th:if="${reviews.isEmpty()}" class="text-center py-2">
+        <p class="text-gray-500 text-sm">No reviews yet</p>
+      </div>
+    </div>
+
+    <div class="mt-3 text-right">
+      <a href="/reviews" class="text-sm text-blue-600 hover:text-blue-900">View all reviews</a>
+    </div>
+  </div>
+</div>
+</body>
+</html>

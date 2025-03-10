@@ -1,0 +1,424 @@
+<!-- src/main/resources/templates/admin/fragments.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Stats Charts Fragment -->
+<div th:fragment="stats-charts">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <!-- Loans Activity Chart -->
+    <div class="bg-white rounded-lg shadow p-4">
+      <h3 class="text-lg font-medium text-gray-900 mb-4">Loan Activity</h3>
+      <div class="h-64" id="loan-activity-chart"></div>
+      <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+          const loanData = /*[[${chartData.loanActivity}]]*/ [];
+
+          const chart = new Chart(
+            document.getElementById('loan-activity-chart'),
+            {
+              type: 'line',
+              data: {
+                labels: loanData.map(d => d.date),
+                datasets: [
+                  {
+                    label: 'New Loans',
+                    data: loanData.map(d => d.loans),
+                    borderColor: 'rgb(59, 130, 246)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.3
+                  },
+                  {
+                    label: 'Returns',
+                    data: loanData.map(d => d.returns),
+                    borderColor: 'rgb(16, 185, 129)',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.3
+                  }
+                ]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    ticks: {
+                      precision: 0
+                    }
+                  }
+                }
+              }
+            }
+          );
+        });
+      </script>
+    </div>
+
+    <!-- Category Distribution Chart -->
+    <div class="bg-white rounded-lg shadow p-4">
+      <h3 class="text-lg font-medium text-gray-900 mb-4">Book Categories</h3>
+      <div class="h-64" id="categories-chart"></div>
+      <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+          const categoryData = /*[[${chartData.categoryDistribution}]]*/ [];
+
+          const chart = new Chart(
+            document.getElementById('categories-chart'),
+            {
+              type: 'doughnut',
+              data: {
+                labels: categoryData.map(d => d.category),
+                datasets: [
+                  {
+                    data: categoryData.map(d => d.count),
+                    backgroundColor: [
+                      'rgba(59, 130, 246, 0.7)',
+                      'rgba(16, 185, 129, 0.7)',
+                      'rgba(245, 158, 11, 0.7)',
+                      'rgba(239, 68, 68, 0.7)',
+                      'rgba(139, 92, 246, 0.7)',
+                      'rgba(217, 70, 239, 0.7)',
+                      'rgba(20, 184, 166, 0.7)',
+                    ]
+                  }
+                ]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    position: 'right'
+                  }
+                }
+              }
+            }
+          );
+        });
+      </script>
+    </div>
+
+    <!-- User Registration Chart -->
+    <div class="bg-white rounded-lg shadow p-4">
+      <h3 class="text-lg font-medium text-gray-900 mb-4">User Registrations</h3>
+      <div class="h-64" id="registration-chart"></div>
+      <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+          const registrationData = /*[[${chartData.userRegistrations}]]*/ [];
+
+          const chart = new Chart(
+            document.getElementById('registration-chart'),
+            {
+              type: 'bar',
+              data: {
+                labels: registrationData.map(d => d.date),
+                datasets: [
+                  {
+                    label: 'New Users',
+                    data: registrationData.map(d => d.count),
+                    backgroundColor: 'rgba(59, 130, 246, 0.7)'
+                  }
+                ]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    ticks: {
+                      precision: 0
+                    }
+                  }
+                }
+              }
+            }
+          );
+        });
+      </script>
+    </div>
+
+    <!-- Overdue Status Chart -->
+    <div class="bg-white rounded-lg shadow p-4">
+      <h3 class="text-lg font-medium text-gray-900 mb-4">Overdue Status</h3>
+      <div class="h-64" id="overdue-chart"></div>
+      <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+          const overdueData = /*[[${chartData.overdueDistribution}]]*/ [];
+
+          const chart = new Chart(
+            document.getElementById('overdue-chart'),
+            {
+              type: 'pie',
+              data: {
+                labels: ['On-time', '1-7 days', '8-14 days', '15+ days'],
+                datasets: [
+                  {
+                    data: [
+                      overdueData.onTime || 0,
+                      overdueData.overdue1To7Days || 0,
+                      overdueData.overdue8To14Days || 0,
+                      overdueData.overdue15PlusDays || 0
+                    ],
+                    backgroundColor: [
+                      'rgba(16, 185, 129, 0.7)',
+                      'rgba(245, 158, 11, 0.7)',
+                      'rgba(249, 115, 22, 0.7)',
+                      'rgba(239, 68, 68, 0.7)'
+                    ]
+                  }
+                ]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false
+              }
+            }
+          );
+        });
+      </script>
+    </div>
+  </div>
+</div>
+
+<!-- System Health Fragment -->
+<div th:fragment="system-health">
+  <div class="bg-white rounded-lg shadow p-6">
+    <h3 class="text-lg font-medium text-gray-900 mb-4">System Health</h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="bg-blue-50 p-4 rounded-lg">
+        <h4 class="text-sm font-medium text-blue-800 mb-1">CPU Usage</h4>
+        <div class="text-2xl font-bold text-blue-900" th:text="${health.cpuUsage + '%'}">45%</div>
+        <div class="mt-2 bg-blue-200 rounded-full h-2.5">
+          <div class="bg-blue-600 h-2.5 rounded-full" th:style="'width: ' + ${health.cpuUsage + '%'}"></div>
+        </div>
+      </div>
+
+      <div class="bg-green-50 p-4 rounded-lg">
+        <h4 class="text-sm font-medium text-green-800 mb-1">Memory Usage</h4>
+        <div class="text-2xl font-bold text-green-900" th:text="${health.memoryUsage + '%'}">65%</div>
+        <div class="mt-2 bg-green-200 rounded-full h-2.5">
+          <div class="bg-green-600 h-2.5 rounded-full" th:style="'width: ' + ${health.memoryUsage + '%'}"></div>
+        </div>
+      </div>
+
+      <div class="bg-purple-50 p-4 rounded-lg">
+        <h4 class="text-sm font-medium text-purple-800 mb-1">Disk Usage</h4>
+        <div class="text-2xl font-bold text-purple-900" th:text="${health.diskUsage + '%'}">30%</div>
+        <div class="mt-2 bg-purple-200 rounded-full h-2.5">
+          <div class="bg-purple-600 h-2.5 rounded-full" th:style="'width: ' + ${health.diskUsage + '%'}"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="bg-gray-50 p-4 rounded-lg">
+        <h4 class="text-sm font-medium text-gray-800 mb-2">Recent Jobs</h4>
+        <table class="min-w-full text-sm">
+          <thead>
+          <tr>
+            <th class="text-left py-2 text-gray-500">Job</th>
+            <th class="text-left py-2 text-gray-500">Status</th>
+            <th class="text-left py-2 text-gray-500">Time</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="job : ${health.recentJobs}">
+            <td class="py-2" th:text="${job.name}">Due Date Reminders</td>
+            <td class="py-2">
+                                    <span th:if="${job.status == 'SUCCEEDED'}"
+                                          class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
+                                        Success
+                                    </span>
+              <span th:if="${job.status == 'FAILED'}" class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">
+                                        Failed
+                                    </span>
+              <span th:if="${job.status == 'RUNNING'}" class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                                        Running
+                                    </span>
+            </td>
+            <td class="py-2 text-gray-500" th:text="${#temporals.format(job.time, 'MMM d, HH:mm')}">Jan 1, 12:34</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="bg-gray-50 p-4 rounded-lg">
+        <h4 class="text-sm font-medium text-gray-800 mb-2">Database Status</h4>
+        <div class="space-y-2">
+          <div class="flex justify-between">
+            <span class="text-gray-600">Connection Pool</span>
+            <span class="font-medium"
+                  th:text="${health.dbConnectionsActive + '/' + health.dbConnectionsMax}">10/20</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Active Queries</span>
+            <span class="font-medium" th:text="${health.dbActiveQueries}">5</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Avg Query Time</span>
+            <span class="font-medium" th:text="${health.dbAvgQueryTime + 'ms'}">120ms</span>
+          </div>
+        </div>
+
+        <h4 class="text-sm font-medium text-gray-800 mt-4 mb-2">Email Status</h4>
+        <div class="space-y-2">
+          <div class="flex justify-between">
+            <span class="text-gray-600">Sent Today</span>
+            <span class="font-medium" th:text="${health.emailsSentToday}">45</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Failed Today</span>
+            <span class="font-medium" th:text="${health.emailsFailedToday}">2</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- User Details Fragment -->
+<div th:fragment="user-details">
+  <div class="bg-white rounded-lg shadow p-6">
+    <div class="flex justify-between items-start mb-6">
+      <div>
+        <h3 class="text-xl font-medium text-gray-900" th:text="${user.fullName}">User Name</h3>
+        <p class="text-gray-500" th:text="${user.email}">user@example.com</p>
+        <p class="text-sm text-gray-500"
+           th:text="'Member since ' + ${#temporals.format(user.registeredAt, 'MMMM d, yyyy')}">
+          Member since January 1, 2023
+        </p>
+      </div>
+      <div class="flex space-x-2">
+        <button class="btn-primary text-sm"
+                hx-post="@{/admin/users/{id}/toggle-admin(id=${user.id})}"
+                hx-target="#user-row-${user.id}"
+                th:text="${user.isAdmin ? 'Remove Admin' : 'Make Admin'}">
+          Toggle Admin
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="bg-gray-50 p-4 rounded-lg">
+        <h4 class="text-sm font-medium text-gray-800 mb-1">Total Loans</h4>
+        <div class="text-2xl font-bold text-gray-900" th:text="${loans.size()}">10</div>
+      </div>
+
+      <div class="bg-blue-50 p-4 rounded-lg">
+        <h4 class="text-sm font-medium text-blue-800 mb-1">Active Loans</h4>
+        <div class="text-2xl font-bold text-blue-900"
+             th:text="${loans.stream().filter(l -> l.getStatus().name() == 'ACTIVE').count()}">3
+        </div>
+      </div>
+
+      <div class="bg-red-50 p-4 rounded-lg">
+        <h4 class="text-sm font-medium text-red-800 mb-1">Overdue</h4>
+        <div class="text-2xl font-bold text-red-900"
+             th:text="${loans.stream().filter(l -> l.getStatus().name() == 'OVERDUE').count()}">1
+        </div>
+      </div>
+    </div>
+
+    <h4 class="text-lg font-medium text-gray-900 mb-3">Loan History</h4>
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+      <tr>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Book</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loan Date</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+      </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+      <tr th:each="loan : ${loans}">
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="flex items-center">
+            <div class="flex-shrink-0 h-10 w-10">
+              <img th:if="${loan.book.coverImageUrl}" th:src="${loan.book.coverImageUrl}"
+                   class="h-10 w-10 rounded object-cover" alt="Book cover">
+              <div th:unless="${loan.book.coverImageUrl}"
+                   class="h-10 w-10 rounded bg-gray-200 flex items-center justify-center text-gray-400">
+                <span class="text-xs">No cover</span>
+              </div>
+            </div>
+            <div class="ml-4">
+              <div class="text-sm font-medium text-gray-900" th:text="${loan.book.title}">Book title</div>
+              <div class="text-sm text-gray-500" th:text="${loan.book.author}">Author</div>
+            </div>
+          </div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="text-sm text-gray-900" th:text="${#temporals.format(loan.loanDate, 'MMM d, yyyy')}">Jan 1, 2023
+          </div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="text-sm text-gray-900" th:text="${#temporals.format(loan.dueDate, 'MMM d, yyyy')}">Jan 15, 2023
+          </div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+                            <span th:if="${loan.status.name() == 'ACTIVE'}"
+                                  class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                Active
+                            </span>
+          <span th:if="${loan.status.name() == 'RETURNED'}"
+                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                Returned
+                            </span>
+          <span th:if="${loan.status.name() == 'OVERDUE'}"
+                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                Overdue
+                            </span>
+          <span th:if="${loan.status.name() == 'RESERVED'}"
+                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                Reserved
+                            </span>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- User Row Fragment -->
+<div th:fragment="user-row" th:id="'user-row-' + ${user.id}">
+  <tr>
+    <td class="px-6 py-4 whitespace-nowrap">
+      <div class="text-sm font-medium text-gray-900" th:text="${user.fullName}">User Name</div>
+      <div class="text-sm text-gray-500" th:text="${user.email}">user@example.com</div>
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+        th:text="${#temporals.format(user.registeredAt, 'MMM d, yyyy')}">
+      Jan 1, 2023
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+                <span th:if="${user.isAdmin}"
+                      class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                    Admin
+                </span>
+      <span th:unless="${user.isAdmin}"
+            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                    User
+                </span>
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+      <div class="flex space-x-2">
+        <button hx-get="@{/admin/users/{id}(id=${user.id})}"
+                hx-target="#user-detail-container"
+                @click="showUserDetail = true"
+                class="text-indigo-600 hover:text-indigo-900">
+          View
+        </button>
+        <button hx-post="@{/admin/users/{id}/toggle-admin(id=${user.id})}"
+                hx-target="closest tr"
+                class="text-blue-600 hover:text-blue-900"
+                th:text="${user.isAdmin ? 'Remove Admin' : 'Make Admin'}">
+          Toggle Admin
+        </button>
+      </div>
+    </td>
+  </tr>
+</div>
+</body>
+</html>
