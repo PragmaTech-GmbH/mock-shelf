@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Cover Image Preview Fragment -->
+<div th:fragment="cover-preview" class="mt-2">
+  <div th:if="${imageUrl != null && !imageUrl.isEmpty()}" class="flex flex-col items-center">
+    <img th:src="${imageUrl}" alt="Book cover preview" class="h-32 rounded shadow-sm object-cover">
+    <p class="text-sm text-green-600 mt-2">Cover image loaded successfully!</p>
+  </div>
+  <div th:unless="${imageUrl != null && !imageUrl.isEmpty()}" class="text-sm text-gray-500">
+    Enter a valid image URL to see a preview
+  </div>
+</div>
+
+<!-- ISBN Validation Fragment -->
+<div th:fragment="isbn-validation">
+  <div th:if="${valid}" class="text-sm text-green-600 mt-1">
+    <span class="flex items-center">
+      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+      </svg>
+      Valid ISBN format
+    </span>
+  </div>
+  <div th:if="${valid == false}" class="text-sm text-red-600 mt-1">
+    <span class="flex items-center">
+      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+      Invalid ISBN format. Please enter a valid 10 or 13 digit ISBN.
+    </span>
+  </div>
+</div>
+
+<!-- Field Validation Fragment -->
+<div th:fragment="field-validation">
+  <div th:if="${valid}" class="text-sm text-green-600 mt-1">
+    <span class="flex items-center">
+      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+      </svg>
+      Looks good!
+    </span>
+  </div>
+  <div th:if="${valid == false}" class="text-sm text-red-600 mt-1">
+    <span class="flex items-center">
+      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+      This field is required
+    </span>
+  </div>
+</div>
+
+<!-- ISBN Lookup Results Fragment -->
+<div th:fragment="isbn-lookup-results">
+  <div th:if="${book != null}" class="bg-green-50 p-4 rounded-md mb-6 border border-green-200">
+    <h3 class="font-medium text-green-800 mb-2">Book Found!</h3>
+    <div class="flex">
+      <img th:if="${book.coverImageUrl}" th:src="${book.coverImageUrl}" class="w-16 h-24 object-cover mr-4 rounded shadow-sm">
+      <div>
+        <p class="font-bold" th:text="${book.title}">Book Title</p>
+        <p class="text-sm text-gray-700" th:text="${book.author}">Author</p>
+        <p class="text-sm text-gray-700" th:if="${book.publisher}" th:text="${'Publisher: ' + book.publisher}">Publisher</p>
+        <p class="text-sm text-gray-700" th:if="${book.publicationDate}" th:text="${'Published: ' + #temporals.format(book.publicationDate, 'MMMM d, yyyy')}">Publication Date</p>
+      </div>
+    </div>
+    <div class="mt-4">
+      <a th:href="@{/books/{id}/edit(id=${book.id})}" class="btn-primary">Edit This Book</a>
+    </div>
+  </div>
+
+  <div th:if="${error != null}" class="bg-red-50 p-4 rounded-md mb-6 border border-red-200">
+    <h3 class="font-medium text-red-800 mb-2">Error</h3>
+    <p class="text-sm text-red-700" th:text="${error}">Error message</p>
+  </div>
+</div>
+</body>
+</html>

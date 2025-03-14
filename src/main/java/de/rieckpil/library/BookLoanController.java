@@ -10,6 +10,7 @@ import de.rieckpil.library.model.BookLoan;
 import de.rieckpil.library.model.LibraryLocation;
 import de.rieckpil.library.model.LibraryUser;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/loans")
@@ -72,9 +74,28 @@ public class BookLoanController {
   }
 
   /** Display loan form for a book */
-  @GetMapping("/new/form")
+  @GetMapping("/new")
   @PreAuthorize("isAuthenticated()")
   public String showLoanForm(@RequestParam UUID bookId, Model model) {
+    Book book = bookService.getBookById(bookId);
+
+    if (!book.getAvailable()) {
+      return "redirect:/books/" + bookId + "?error=not_available";
+    }
+
+    List<LibraryLocation> locations = locationService.getAllLocations();
+
+    model.addAttribute("book", book);
+    model.addAttribute("locations", locations);
+    model.addAttribute("loanDuration", 14); // Default to 14 days
+
+    return "loans/create";
+  }
+
+  /** Display HTMX loan form for a book */
+  @GetMapping(value = "/new/form", produces = MediaType.TEXT_HTML_VALUE)
+  @PreAuthorize("isAuthenticated()")
+  public String showLoanFormHtmx(@RequestParam UUID bookId, Model model) {
     Book book = bookService.getBookById(bookId);
 
     if (!book.getAvailable()) {
@@ -87,8 +108,30 @@ public class BookLoanController {
 
     model.addAttribute("book", book);
     model.addAttribute("locations", locations);
+    model.addAttribute("loanDuration", 14); // Default to 14 days
 
     return "loans/fragments :: loan-form";
+  }
+
+  /** Get loan due date preview with HTMX */
+  @GetMapping(value = "/due-date-preview", produces = MediaType.TEXT_HTML_VALUE)
+  @PreAuthorize("isAuthenticated()")
+  public String getDueDatePreview(
+      @RequestParam int loanDays,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+          LocalDate startDate,
+      Model model) {
+
+    // Default to today if no date is provided
+    LocalDate loanStartDate = startDate != null ? startDate : LocalDate.now();
+
+    // Calculate due date
+    LocalDate dueDate = loanStartDate.plusDays(loanDays);
+
+    model.addAttribute("dueDate", dueDate);
+    model.addAttribute("loanDays", loanDays);
+
+    return "loans/fragments :: due-date-preview";
   }
 
   /** Process loan request */
@@ -97,23 +140,71 @@ public class BookLoanController {
   public String createLoan(
       @RequestParam UUID bookId,
       @RequestParam UUID pickupLocationId,
-      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate loanDate,
-      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dueDate,
+      @RequestParam(defaultValue = "14") int loanDays,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+          LocalDate loanDate,
+      Model model,
+      RedirectAttributes redirectAttributes) {
+
+    try {
+      LibraryUser currentUser = userService.getCurrentUser();
+      Book book = bookService.getBookById(bookId);
+      LibraryLocation location = locationService.getLocationById(pickupLocationId);
+
+      // Default to today if no date is provided
+      LocalDate loanStartDate = loanDate != null ? loanDate : LocalDate.now();
+
+      // Calculate due date
+      ZonedDateTime loanStartDateTime = loanStartDate.atStartOfDay(ZonedDateTime.now().getZone());
+      ZonedDateTime dueDateTime = loanStartDateTime.plusDays(loanDays);
+
+      BookLoan loan =
+          loanService.createLoan(book, currentUser, location, loanStartDateTime, dueDateTime);
+
+      redirectAttributes.addFlashAttribute(
+          "successMessage",
+          "Book '"
+              + book.getTitle()
+              + "' has been successfully borrowed. Please return it by "
+              + dueDateTime.toLocalDate().toString()
+              + ".");
+
+      return "redirect:/loans/my-loans";
+
+    } catch (BookNotAvailableException e) {
+      redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+      return "redirect:/books/" + bookId;
+    } catch (Exception e) {
+      redirectAttributes.addFlashAttribute("errorMessage", "An error occurred: " + e.getMessage());
+      return "redirect:/books/" + bookId;
+    }
+  }
+
+  /** Process loan request with HTMX */
+  @PostMapping(value = "/create/htmx", produces = MediaType.TEXT_HTML_VALUE)
+  @PreAuthorize("isAuthenticated()")
+  public String createLoanHtmx(
+      @RequestParam UUID bookId,
+      @RequestParam UUID pickupLocationId,
+      @RequestParam(defaultValue = "14") int loanDays,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+          LocalDate loanDate,
       Model model) {
 
     try {
       LibraryUser currentUser = userService.getCurrentUser();
-
       Book book = bookService.getBookById(bookId);
       LibraryLocation location = locationService.getLocationById(pickupLocationId);
 
+      // Default to today if no date is provided
+      LocalDate loanStartDate = loanDate != null ? loanDate : LocalDate.now();
+
+      // Calculate due date
+      ZonedDateTime loanStartDateTime = loanStartDate.atStartOfDay(ZonedDateTime.now().getZone());
+      ZonedDateTime dueDateTime = loanStartDateTime.plusDays(loanDays);
+
       BookLoan loan =
-          loanService.createLoan(
-              book,
-              currentUser,
-              location,
-              ZonedDateTime.now(),
-              ZonedDateTime.from(dueDate.atStartOfDay(ZonedDateTime.now().getZone())));
+          loanService.createLoan(book, currentUser, location, loanStartDateTime, dueDateTime);
 
       model.addAttribute("loan", loan);
       return "loans/fragments :: loan-success";

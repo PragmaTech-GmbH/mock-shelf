@@ -26,29 +26,44 @@
         <!-- Hidden ID field for edits -->
         <input type="hidden" th:field="*{id}" th:if="${!isNew}">
 
-        <!-- ISBN Field -->
+        <!-- ISBN Field with HTMX validation -->
         <div class="form-group">
           <label for="isbn" class="form-label">ISBN *</label>
           <input type="text" th:field="*{isbn}" id="isbn" class="form-input"
-                 placeholder="Enter ISBN (10 or 13 digits)" required>
+                 placeholder="Enter ISBN (10 or 13 digits)" required
+                 hx-get="/books/validate-isbn"
+                 hx-trigger="keyup changed delay:500ms"
+                 hx-target="#isbn-validation"
+                 hx-params="isbn=this.value">
+          <div id="isbn-validation" class="text-xs mt-1"></div>
           <div th:if="${#fields.hasErrors('isbn')}" class="text-red-500 text-xs mt-1"
                th:errors="*{isbn}">ISBN Error</div>
         </div>
 
-        <!-- Title Field -->
+        <!-- Title Field with HTMX validation -->
         <div class="form-group">
           <label for="title" class="form-label">Title *</label>
           <input type="text" th:field="*{title}" id="title" class="form-input"
-                 placeholder="Enter book title" required>
+                 placeholder="Enter book title" required
+                 hx-get="/books/validate-field"
+                 hx-trigger="keyup changed delay:500ms"
+                 hx-target="#title-validation"
+                 hx-params="value=this.value">
+          <div id="title-validation" class="text-xs mt-1"></div>
           <div th:if="${#fields.hasErrors('title')}" class="text-red-500 text-xs mt-1"
                th:errors="*{title}">Title Error</div>
         </div>
 
-        <!-- Author Field -->
+        <!-- Author Field with HTMX validation -->
         <div class="form-group">
           <label for="author" class="form-label">Author *</label>
           <input type="text" th:field="*{author}" id="author" class="form-input"
-                 placeholder="Enter author name" required>
+                 placeholder="Enter author name" required
+                 hx-get="/books/validate-field"
+                 hx-trigger="keyup changed delay:500ms"
+                 hx-target="#author-validation"
+                 hx-params="value=this.value">
+          <div id="author-validation" class="text-xs mt-1"></div>
           <div th:if="${#fields.hasErrors('author')}" class="text-red-500 text-xs mt-1"
                th:errors="*{author}">Author Error</div>
         </div>
@@ -73,13 +88,20 @@
                     placeholder="Enter book description"></textarea>
         </div>
 
-        <!-- Cover Image URL Field -->
+        <!-- Cover Image URL Field with HTMX preview -->
         <div class="form-group">
           <label for="coverImageUrl" class="form-label">Cover Image URL</label>
           <input type="text" th:field="*{coverImageUrl}" id="coverImageUrl" class="form-input"
-                 placeholder="Enter URL to book cover image">
-          <div class="mt-2" th:if="*{coverImageUrl}">
-            <img th:src="*{coverImageUrl}" alt="Book cover preview" class="h-32 rounded shadow-sm">
+                 placeholder="Enter URL to book cover image"
+                 hx-get="/books/preview-cover"
+                 hx-trigger="keyup changed delay:800ms"
+                 hx-target="#cover-preview"
+                 hx-params="imageUrl=this.value">
+          <div id="cover-preview" class="mt-2">
+            <!-- Cover preview will be loaded here by HTMX -->
+            <div th:if="*{coverImageUrl}" class="flex flex-col items-center">
+              <img th:src="*{coverImageUrl}" alt="Book cover preview" class="h-32 rounded shadow-sm object-cover">
+            </div>
           </div>
         </div>
 

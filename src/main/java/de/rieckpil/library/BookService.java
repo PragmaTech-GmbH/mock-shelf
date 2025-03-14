@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import de.rieckpil.library.model.Book;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,39 +22,20 @@ public class BookService {
     this.isbnLookupService = isbnLookupService;
   }
 
-  /**
-   * Get a book by ID
-   *
-   * @param id Book ID
-   * @return Book if found
-   * @throws BookNotFoundException if book not found
-   */
   public Book getBookById(UUID id) {
     return bookRepository
         .findById(id)
         .orElseThrow(() -> new BookNotFoundException("Book not found with ID: " + id));
   }
 
-  /**
-   * Get a book by ISBN
-   *
-   * @param isbn ISBN
-   * @return Book if found
-   * @throws BookNotFoundException if book not found
-   */
   public Book getBookByIsbn(String isbn) {
+    // Normalize ISBN by removing hyphens and spaces
+    String normalizedIsbn = normalizeIsbn(isbn);
     return bookRepository
-        .findByIsbn(isbn)
+        .findByIsbn(normalizedIsbn)
         .orElseThrow(() -> new BookNotFoundException("Book not found with ISBN: " + isbn));
   }
 
-  /**
-   * Search for books by title, author, ISBN, or category
-   *
-   * @param searchTerm Search term
-   * @param pageable Pagination information
-   * @return Page of books
-   */
   public Page<Book> searchBooks(String searchTerm, Pageable pageable) {
     if (searchTerm == null || searchTerm.isBlank()) {
       return bookRepository.findAll(pageable);
@@ -61,45 +43,23 @@ public class BookService {
     return bookRepository.search(searchTerm, pageable);
   }
 
-  /**
-   * Get books by availability
-   *
-   * @param available Availability flag
-   * @return List of books
-   */
   public List<Book> getBooksByAvailability(boolean available) {
     return bookRepository.findByAvailable(available);
   }
 
-  /**
-   * Get all books with pagination
-   *
-   * @param pageable Pagination information
-   * @return Page of books
-   */
   public Page<Book> getAllBooks(Pageable pageable) {
     return bookRepository.findAll(pageable);
   }
 
-  /**
-   * Get most borrowed books
-   *
-   * @param limit Maximum number of books to return
-   * @return List of most borrowed books
-   */
   public List<Book> getMostBorrowedBooks(int limit) {
     return bookRepository.findMostBorrowedBooks(limit);
   }
 
-  /**
-   * Create a new book
-   *
-   * @param book Book to create
-   * @return Created book
-   * @throws BookAlreadyExistsException if book with same ISBN already exists
-   */
   @Transactional
   public Book createBook(Book book) {
+    // Normalize ISBN
+    book.setIsbn(normalizeIsbn(book.getIsbn()));
+
     // Check if book with same ISBN already exists
     Optional<Book> existingBook = bookRepository.findByIsbn(book.getIsbn());
     if (existingBook.isPresent()) {
@@ -109,17 +69,12 @@ public class BookService {
     return bookRepository.save(book);
   }
 
-  /**
-   * Update an existing book
-   *
-   * @param id Book ID
-   * @param bookDetails Updated book details
-   * @return Updated book
-   * @throws BookNotFoundException if book not found
-   */
   @Transactional
   public Book updateBook(UUID id, Book bookDetails) {
     Book book = getBookById(id);
+
+    // Normalize ISBN
+    bookDetails.setIsbn(normalizeIsbn(bookDetails.getIsbn()));
 
     // If ISBN is being changed, check it doesn't conflict with another book
     if (!book.getIsbn().equals(bookDetails.getIsbn())) {
@@ -150,12 +105,6 @@ public class BookService {
     return bookRepository.save(book);
   }
 
-  /**
-   * Delete a book
-   *
-   * @param id Book ID
-   * @throws BookNotFoundException if book not found
-   */
   @Transactional
   public void deleteBook(UUID id) {
     if (!bookRepository.existsById(id)) {
@@ -164,14 +113,6 @@ public class BookService {
     bookRepository.deleteById(id);
   }
 
-  /**
-   * Update book availability
-   *
-   * @param id Book ID
-   * @param available Availability flag
-   * @return Updated book
-   * @throws BookNotFoundException if book not found
-   */
   @Transactional
   public Book updateAvailability(UUID id, boolean available) {
     Book book = getBookById(id);
@@ -179,37 +120,48 @@ public class BookService {
     return bookRepository.save(book);
   }
 
-  /**
-   * Lookup book information by ISBN from external API and create a book
-   *
-   * @param isbn ISBN to lookup
-   * @return The newly created book
-   */
   @Transactional
   public Optional<Book> lookupAndCreateBook(String isbn) {
+    // Normalize ISBN
+    String normalizedIsbn = normalizeIsbn(isbn);
+
     // Check if book with ISBN already exists
-    Optional<Book> existingBook = bookRepository.findByIsbn(isbn);
+    Optional<Book> existingBook = bookRepository.findByIsbn(normalizedIsbn);
     if (existingBook.isPresent()) {
-      throw new BookAlreadyExistsException("Book already exists with ISBN: " + isbn);
+      return existingBook;
     }
 
     // Lookup book by ISBN
-    return isbnLookupService
-        .lookupByIsbn(isbn)
-        .map(isbnLookupService::convertToBookEntity)
-        .map(bookRepository::save);
+    try {
+      return isbnLookupService
+          .lookupByIsbn(normalizedIsbn)
+          .map(
+              bookData -> {
+                Book book = isbnLookupService.convertToBookEntity(bookData);
+                return bookRepository.save(book);
+              });
+    } catch (Exception e) {
+      throw new IsbnLookupException("Failed to lookup ISBN: " + e.getMessage());
+    }
   }
 
-  Long countAllBooks() {
-    return null;
+  public Long countAllBooks() {
+    return bookRepository.count();
   }
 
-  Long countAvailableBooks() {
-
-    return null;
+  public int countAvailableBooks() {
+    return bookRepository.findByAvailable(true).size();
   }
 
-  List<Book> getRecentlyAddedBooks(int amount) {
-    return null;
+  public List<Book> getRecentlyAddedBooks(int amount) {
+    return bookRepository.findRecentlyAddedBooks(PageRequest.of(0, amount));
+  }
+
+  // Helper method to normalize ISBN by removing hyphens and spaces
+  private String normalizeIsbn(String isbn) {
+    if (isbn == null) {
+      return null;
+    }
+    return isbn.replaceAll("[-\\s]", "").trim();
   }
 }

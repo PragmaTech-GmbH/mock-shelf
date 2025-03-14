@@ -9,8 +9,8 @@
   <div class="container mx-auto px-4 py-8">
     <!-- Back Button -->
     <div class="mb-4">
-      <a th:href="@{/books}" class="text-blue-600 hover:text-blue-800 flex items-center">
-        <span class="mr-1">←</span> Back to Books
+      <a th:href="@{/books/{id}(id=${book.id})}" class="text-blue-600 hover:text-blue-800 flex items-center">
+        <span class="mr-1">←</span> Back to Book Details
       </a>
     </div>
 
@@ -18,15 +18,8 @@
     <h1 class="text-3xl font-semibold text-gray-800 mb-6">Borrow Book</h1>
 
     <!-- Alerts -->
-    <div th:if="${error}"
-         x-data="{ show: true }"
-         x-show="show"
-         class="alert-danger mb-6"
-         role="alert">
-      <div class="flex justify-between">
-        <span th:text="${error}"></span>
-        <button type="button" @click="show = false" class="text-red-700">×</button>
-      </div>
+    <div th:if="${param.error}" class="alert-danger mb-6" role="alert">
+      <span th:text="${param.error eq 'not_available' ? 'This book is not available for loan.' : param.error}"></span>
     </div>
 
     <!-- Book Information -->
@@ -62,110 +55,104 @@
             </div>
             <div>
               <h3 class="text-sm font-semibold text-gray-500 uppercase">Status</h3>
-              <span th:if="${book.available}" class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                    Available
-                                </span>
-              <span th:unless="${book.available}" class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                    Not Available
-                                </span>
+              <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                Available
+              </span>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Loan Form with due date calculation using Alpine.js -->
-    <div class="bg-white shadow-md rounded-lg overflow-hidden p-6"
-         x-data="{
-                     loanDays: 14,
-                     startDate: new Date().toISOString().slice(0, 10),
-                     pickupLocation: '',
-                     get dueDate() {
-                         const date = new Date(this.startDate);
-                         date.setDate(date.getDate() + parseInt(this.loanDays));
-                         return date.toISOString().slice(0, 10);
-                     }
-                 }">
+    <!-- Loan Form with HTMX integration -->
+    <div class="bg-white shadow-md rounded-lg overflow-hidden p-6">
       <h2 class="text-xl font-semibold text-gray-800 mb-4">Loan Details</h2>
 
-      <form hx-post="/loans/create"
-            hx-headers='{"X-CSRF-TOKEN": "[[${_csrf.token}]]"}'
-            hx-push-url="false"
-            hx-target="#loan-confirmation"
-            @submit="$dispatch('show-confirmation')"
-            class="space-y-6">
-
+      <form th:action="@{/loans/create}" method="post" class="space-y-6">
         <input type="hidden" name="bookId" th:value="${book.id}">
 
-        <!-- Loan Period -->
-        <div class="form-group">
-          <label for="loanDays" class="form-label">Loan Period (days)</label>
-          <div class="flex items-center space-x-2">
-            <input type="range" x-model="loanDays" min="7" max="30" step="7" class="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer">
-            <span x-text="loanDays" class="text-gray-700 font-medium w-10 text-center"></span>
+        <!-- Loan Period Selection -->
+        <div class="form-group" x-data="{ loanDays: 14 }">
+          <label class="form-label">Loan Period</label>
+          <div class="flex flex-col space-y-4">
+            <div class="flex items-center space-x-4">
+              <label class="flex items-center">
+                <input type="radio" name="loanDays" value="7"
+                       x-model="loanDays"
+                       hx-get="/loans/due-date-preview"
+                       hx-trigger="click"
+                       hx-target="#due-date-preview"
+                       hx-vals='{"loanDays": 7, "startDate": document.getElementById("loanDate").value}'
+                       class="mr-2">
+                <span>7 days</span>
+              </label>
+              <label class="flex items-center">
+                <input type="radio" name="loanDays" value="14" checked
+                       x-model="loanDays"
+                       hx-get="/loans/due-date-preview"
+                       hx-trigger="click"
+                       hx-target="#due-date-preview"
+                       hx-vals='{"loanDays": 14, "startDate": document.getElementById("loanDate").value}'
+                       class="mr-2">
+                <span>14 days</span>
+              </label>
+              <label class="flex items-center">
+                <input type="radio" name="loanDays" value="21"
+                       x-model="loanDays"
+                       hx-get="/loans/due-date-preview"
+                       hx-trigger="click"
+                       hx-target="#due-date-preview"
+                       hx-vals='{"loanDays": 21, "startDate": document.getElementById("loanDate").value}'
+                       class="mr-2">
+                <span>21 days</span>
+              </label>
+            </div>
           </div>
         </div>
 
         <!-- Loan Start Date -->
         <div class="form-group">
           <label for="loanDate" class="form-label">Loan Start Date</label>
-          <input type="date" id="loanDate" name="loanDate" x-model="startDate" class="form-input" min="{{ new Date().toISOString().slice(0, 10) }}" required>
+          <input type="date" id="loanDate" name="loanDate" class="form-input"
+                 th:value="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}"
+                 min="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}"
+                 hx-get="/loans/due-date-preview"
+                 hx-trigger="change"
+                 hx-target="#due-date-preview"
+                 hx-vals='{"loanDays": document.querySelector("input[name=loanDays]:checked").value, "startDate": this.value}'>
         </div>
 
-        <!-- Calculated Due Date (read-only) -->
-        <div class="form-group">
-          <label for="dueDate" class="form-label">Due Date</label>
-          <input type="date" id="dueDate" name="dueDate" x-model="dueDate" class="form-input bg-gray-50" readonly>
-          <p class="text-sm text-gray-500 mt-1">Books must be returned by this date to avoid late fees.</p>
+        <!-- Due Date Preview (updated by HTMX) -->
+        <div id="due-date-preview" class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <h3 class="text-sm font-semibold text-blue-800">Due Date</h3>
+          <p class="text-blue-800 text-lg font-medium" th:text="${#temporals.format(#temporals.createToday().plusDays(14), 'EEEE, MMMM d, yyyy')}">
+            Monday, January 1, 2023
+          </p>
+          <p class="text-sm text-blue-700">Books must be returned by this date to avoid late fees.</p>
         </div>
 
         <!-- Pickup Location -->
         <div class="form-group">
           <label for="pickupLocationId" class="form-label">Pickup Location</label>
-          <select id="pickupLocationId" name="pickupLocationId" x-model="pickupLocation" class="form-input" required>
+          <select id="pickupLocationId" name="pickupLocationId" class="form-input" required>
             <option value="">Select a pickup location</option>
             <option th:each="location : ${locations}"
                     th:value="${location.id}"
                     th:text="${location.name}">Library Location</option>
           </select>
+          <p class="text-xs text-gray-500 mt-1">
+            Please select where you would like to pick up this book.
+          </p>
         </div>
 
         <!-- Form Buttons -->
-        <div class="flex justify-end space-x-3">
-          <button type="submit"
-                  class="btn-primary"
-                  x-bind:disabled="!pickupLocation"
-                  x-bind:class="{'opacity-50 cursor-not-allowed': !pickupLocation}">
+        <div class="flex space-x-2">
+          <button type="submit" class="btn-primary">
             Borrow Book
           </button>
           <a th:href="@{/books/{id}(id=${book.id})}" class="btn-secondary">Cancel</a>
         </div>
       </form>
-    </div>
-
-    <!-- Confirmation Modal with Alpine.js -->
-    <div x-data="{ showConfirmation: false }"
-         @show-confirmation.window="showConfirmation = true"
-         x-show="showConfirmation"
-         class="fixed inset-0 overflow-y-auto"
-         x-cloak
-         style="display: none;">
-      <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 transition-opacity" aria-hidden="true">
-          <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
-        </div>
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-          <div id="loan-confirmation" class="bg-white p-6">
-            <!-- Content will be loaded by HTMX -->
-            <div class="flex justify-center">
-              <svg class="animate-spin h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </main>

@@ -3,7 +3,17 @@ package de.rieckpil.library.model;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -59,83 +69,83 @@ public class BookLoan {
         && status != LoanStatus.RETURNED;
   }
 
-  UUID getId() {
+  public UUID getId() {
     return id;
   }
 
-  void setId(UUID id) {
+  public void setId(UUID id) {
     this.id = id;
   }
 
-  Book getBook() {
+  public Book getBook() {
     return book;
   }
 
-  void setBook(Book book) {
+  public void setBook(Book book) {
     this.book = book;
   }
 
-  LibraryUser getUser() {
+  public LibraryUser getUser() {
     return user;
   }
 
-  void setUser(LibraryUser user) {
+  public void setUser(LibraryUser user) {
     this.user = user;
   }
 
-  LibraryLocation getPickupLocation() {
+  public LibraryLocation getPickupLocation() {
     return pickupLocation;
   }
 
-  void setPickupLocation(LibraryLocation pickupLocation) {
+  public void setPickupLocation(LibraryLocation pickupLocation) {
     this.pickupLocation = pickupLocation;
   }
 
-  ZonedDateTime getLoanDate() {
+  public ZonedDateTime getLoanDate() {
     return loanDate;
   }
 
-  void setLoanDate(ZonedDateTime loanDate) {
+  public void setLoanDate(ZonedDateTime loanDate) {
     this.loanDate = loanDate;
   }
 
-  ZonedDateTime getDueDate() {
+  public ZonedDateTime getDueDate() {
     return dueDate;
   }
 
-  void setDueDate(ZonedDateTime dueDate) {
+  public void setDueDate(ZonedDateTime dueDate) {
     this.dueDate = dueDate;
   }
 
-  ZonedDateTime getReturnDate() {
+  public ZonedDateTime getReturnDate() {
     return returnDate;
   }
 
-  void setReturnDate(ZonedDateTime returnDate) {
+  public void setReturnDate(ZonedDateTime returnDate) {
     this.returnDate = returnDate;
   }
 
-  LoanStatus getStatus() {
+  public LoanStatus getStatus() {
     return status;
   }
 
-  void setStatus(LoanStatus status) {
+  public void setStatus(LoanStatus status) {
     this.status = status;
   }
 
-  ZonedDateTime getCreatedAt() {
+  public ZonedDateTime getCreatedAt() {
     return createdAt;
   }
 
-  void setCreatedAt(ZonedDateTime createdAt) {
+  public void setCreatedAt(ZonedDateTime createdAt) {
     this.createdAt = createdAt;
   }
 
-  ZonedDateTime getUpdatedAt() {
+  public ZonedDateTime getUpdatedAt() {
     return updatedAt;
   }
 
-  void setUpdatedAt(ZonedDateTime updatedAt) {
+  public void setUpdatedAt(ZonedDateTime updatedAt) {
     this.updatedAt = updatedAt;
   }
 }

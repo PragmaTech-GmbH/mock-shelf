@@ -29,29 +29,74 @@
         If the book is found, it will be added to the library.
       </p>
 
-      <form th:action="@{/books/isbn-lookup}" th:object="${isbnLookup}" method="post" class="space-y-6">
-        <!-- ISBN Field -->
+      <div class="space-y-6">
+        <!-- HTMX-powered ISBN Lookup Form -->
         <div class="form-group">
           <label for="isbn" class="form-label">ISBN *</label>
-          <input type="text" th:field="*{isbn}" id="isbn" class="form-input"
-                 placeholder="Enter 10 or 13 digit ISBN (e.g., 9780132350884)" required>
-          <div th:if="${#fields.hasErrors('isbn')}" class="text-red-500 text-xs mt-1"
-               th:errors="*{isbn}">ISBN Error</div>
+          <div class="flex">
+            <input type="text" id="isbn" name="isbn" class="form-input rounded-r-none"
+                   placeholder="Enter 10 or 13 digit ISBN (e.g., 9780132350884)" required
+                   hx-get="/books/validate-isbn"
+                   hx-trigger="keyup changed delay:500ms"
+                   hx-target="#isbn-validation"
+                   hx-params="isbn=this.value">
+            <button class="btn-primary rounded-l-none"
+                    hx-post="/books/lookup-isbn-ajax"
+                    hx-target="#lookup-results"
+                    hx-params="isbn=document.getElementById('isbn').value"
+                    hx-indicator="#spinner">
+              Look up
+            </button>
+          </div>
+          <div id="isbn-validation" class="text-xs mt-1"></div>
           <p class="text-xs text-gray-500 mt-1">
             ISBN should be 10 or 13 digits, can include hyphens (e.g., 978-0-13-235088-4)
           </p>
         </div>
 
-        <!-- Form Buttons -->
-        <div class="flex space-x-2">
-          <button type="submit" class="btn-primary">
-            <span>Look up ISBN</span>
-          </button>
-          <a th:href="@{/books}" class="btn-secondary">Cancel</a>
+        <!-- Loading indicator -->
+        <div id="spinner" class="htmx-indicator flex justify-center my-4">
+          <svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
         </div>
-      </form>
+
+        <!-- Results will be loaded here -->
+        <div id="lookup-results">
+          <!-- HTMX will populate this area -->
+        </div>
+
+        <!-- Form for traditional submission -->
+        <form th:action="@{/books/isbn-lookup}" th:object="${isbnLookup}" method="post" class="mt-8 pt-6 border-t border-gray-200">
+          <input type="hidden" th:field="*{isbn}" id="form-isbn">
+
+          <p class="text-gray-600 mb-4">
+            If you want to add the book to the library, click the button below:
+          </p>
+
+          <div class="flex space-x-2">
+            <button type="submit" class="btn-primary">
+              Add Book to Library
+            </button>
+            <a th:href="@{/books}" class="btn-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
+
+  <!-- Script to sync the visible ISBN field with the hidden form field -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const isbnInput = document.getElementById('isbn');
+      const formIsbn = document.getElementById('form-isbn');
+
+      isbnInput.addEventListener('input', function() {
+        formIsbn.value = this.value;
+      });
+    });
+  </script>
 </main>
 </body>
 </html>

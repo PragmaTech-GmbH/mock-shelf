@@ -14,48 +14,75 @@
       </div>
     </div>
 
-    <form hx-post="/loans/create"
+    <form hx-post="/loans/create/htmx"
           hx-target="#loan-confirmation"
           class="space-y-4"
-          x-data="{
-                      loanDays: 14,
-                      startDate: new Date().toISOString().slice(0, 10),
-                      pickupLocation: '',
-                      get dueDate() {
-                          const date = new Date(this.startDate);
-                          date.setDate(date.getDate() + parseInt(this.loanDays));
-                          return date.toISOString().slice(0, 10);
-                      }
-                  }">
+          x-data="{ loanDays: 14 }">
       <input type="hidden" name="bookId" th:value="${book.id}">
 
-      <!-- Loan Period Slider -->
+      <!-- Loan Period Selection -->
       <div class="form-group">
-        <label class="form-label">Loan Period (days)</label>
-        <div class="flex items-center space-x-2">
-          <input type="range" x-model="loanDays" min="7" max="30" step="7" class="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer">
-          <span x-text="loanDays" class="text-gray-700 font-medium w-10 text-center"></span>
+        <label class="form-label">Loan Period</label>
+        <div class="grid grid-cols-3 gap-2">
+          <button type="button"
+                  class="py-2 px-4 border rounded-md transition-colors"
+                  :class="loanDays === 7 ? 'bg-blue-100 border-blue-500 text-blue-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'"
+                  @click="loanDays = 7"
+                  hx-get="/loans/due-date-preview"
+                  hx-trigger="click"
+                  hx-target="#due-date-preview-htmx"
+                  hx-vals='{"loanDays": 7, "startDate": document.getElementById("loanDateHtmx").value}'>
+            7 days
+          </button>
+          <button type="button"
+                  class="py-2 px-4 border rounded-md transition-colors"
+                  :class="loanDays === 14 ? 'bg-blue-100 border-blue-500 text-blue-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'"
+                  @click="loanDays = 14"
+                  hx-get="/loans/due-date-preview"
+                  hx-trigger="click"
+                  hx-target="#due-date-preview-htmx"
+                  hx-vals='{"loanDays": 14, "startDate": document.getElementById("loanDateHtmx").value}'>
+            14 days
+          </button>
+          <button type="button"
+                  class="py-2 px-4 border rounded-md transition-colors"
+                  :class="loanDays === 21 ? 'bg-blue-100 border-blue-500 text-blue-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'"
+                  @click="loanDays = 21"
+                  hx-get="/loans/due-date-preview"
+                  hx-trigger="click"
+                  hx-target="#due-date-preview-htmx"
+                  hx-vals='{"loanDays": 21, "startDate": document.getElementById("loanDateHtmx").value}'>
+            21 days
+          </button>
         </div>
+        <input type="hidden" name="loanDays" x-model="loanDays">
       </div>
 
       <!-- Loan Start Date -->
       <div class="form-group">
         <label class="form-label">Start Date</label>
-        <input type="date" name="loanDate" x-model="startDate" class="form-input"
-               :min="new Date().toISOString().slice(0, 10)" required>
+        <input type="date" id="loanDateHtmx" name="loanDate" class="form-input"
+               th:value="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}"
+               min="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}"
+               hx-get="/loans/due-date-preview"
+               hx-trigger="change"
+               hx-target="#due-date-preview-htmx"
+               hx-vals='{"loanDays": loanDays, "startDate": this.value}'>
       </div>
 
-      <!-- Due Date (readonly) -->
-      <div class="form-group">
-        <label class="form-label">Due Date</label>
-        <input type="date" name="dueDate" x-model="dueDate" class="form-input bg-gray-50" readonly>
-        <p class="text-xs text-gray-500 mt-1">Books must be returned by this date</p>
+      <!-- Due Date Preview (updated by HTMX) -->
+      <div id="due-date-preview-htmx" class="p-3 bg-blue-50 rounded-md border border-blue-200">
+        <h3 class="text-sm font-semibold text-blue-800">Due Date</h3>
+        <p class="text-blue-800 text-lg font-medium" th:text="${#temporals.format(#temporals.createToday().plusDays(14), 'EEEE, MMMM d, yyyy')}">
+          Monday, January 1, 2023
+        </p>
+        <p class="text-xs text-blue-700">Books must be returned by this date to avoid late fees.</p>
       </div>
 
       <!-- Pickup Location -->
       <div class="form-group">
         <label class="form-label">Pickup Location</label>
-        <select name="pickupLocationId" x-model="pickupLocation" class="form-input" required>
+        <select name="pickupLocationId" class="form-input" required>
           <option value="">Select a location</option>
           <option th:each="location : ${locations}" th:value="${location.id}" th:text="${location.name}">
             Library Location
@@ -65,15 +92,23 @@
 
       <!-- Submit Button -->
       <div class="flex justify-end">
-        <button type="submit"
-                class="btn-primary"
-                x-bind:disabled="!pickupLocation"
-                x-bind:class="{'opacity-50 cursor-not-allowed': !pickupLocation}">
+        <button type="submit" class="btn-primary">
           Borrow Book
         </button>
       </div>
     </form>
   </div>
+</div>
+
+<!-- Due Date Preview Fragment -->
+<div th:fragment="due-date-preview">
+  <h3 class="text-sm font-semibold text-blue-800">Due Date</h3>
+  <p class="text-blue-800 text-lg font-medium" th:text="${#temporals.format(dueDate, 'EEEE, MMMM d, yyyy')}">
+    Monday, January 1, 2023
+  </p>
+  <p class="text-xs text-blue-700">
+    <span th:text="${loanDays}">14</span> day loan. Books must be returned by this date to avoid late fees.
+  </p>
 </div>
 
 <!-- Loan Success Fragment -->
@@ -160,18 +195,18 @@
           <div class="text-sm text-gray-900" th:text="${#temporals.format(loan.dueDate, 'MMM d, yyyy')}">Jan 15, 2023</div>
         </td>
         <td class="px-6 py-4 whitespace-nowrap">
-                            <span th:if="${loan.status.name() == 'ACTIVE'}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                Active
-                            </span>
+                <span th:if="${loan.status.name() == 'ACTIVE'}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                    Active
+                </span>
           <span th:if="${loan.status.name() == 'RETURNED'}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                Returned
-                            </span>
+                    Returned
+                </span>
           <span th:if="${loan.status.name() == 'OVERDUE'}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                Overdue
-                            </span>
+                    Overdue
+                </span>
           <span th:if="${loan.status.name() == 'RESERVED'}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                Reserved
-                            </span>
+                    Reserved
+                </span>
         </td>
       </tr>
       <tr th:if="${loanHistory.isEmpty()}">
@@ -181,16 +216,6 @@
       </tr>
       </tbody>
     </table>
-
-    <!-- Load More Button -->
-    <div th:if="${hasMore}" class="bg-gray-50 px-6 py-3 text-center">
-      <button class="text-sm text-blue-600 hover:text-blue-900 font-medium"
-              hx-get="@{/user/loan-history(page=${page + 1}, size=${size})}"
-              hx-target="closest div"
-              hx-swap="outerHTML">
-        Load More Loans
-      </button>
-    </div>
   </div>
 </div>
 
@@ -224,6 +249,43 @@
       <div class="ml-3">
         <p class="text-sm font-medium text-red-800" th:text="${error}">
           Error returning book.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Extend Success Fragment -->
+<div th:fragment="extend-success">
+  <div class="rounded-md bg-green-50 p-4">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div class="ml-3">
+        <p class="text-sm font-medium text-green-800">
+          Loan for "<span th:text="${loan.book.title}">Book Title</span>" has been extended to
+          <span th:text="${#temporals.format(loan.dueDate, 'MMMM d, yyyy')}">January 1, 2023</span>.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Extend Error Fragment -->
+<div th:fragment="extend-error">
+  <div class="rounded-md bg-red-50 p-4">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div class="ml-3">
+        <p class="text-sm font-medium text-red-800" th:text="${error}">
+          Error extending loan.
         </p>
       </div>
     </div>
@@ -272,18 +334,18 @@
         <div class="text-sm text-gray-900" th:text="${#temporals.format(loan.dueDate, 'MMM d, yyyy')}">Jan 15, 2023</div>
       </td>
       <td class="px-6 py-4 whitespace-nowrap">
-                        <span th:if="${loan.status.name() == 'ACTIVE'}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                            Active
-                        </span>
+                <span th:if="${loan.status.name() == 'ACTIVE'}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                    Active
+                </span>
         <span th:if="${loan.status.name() == 'RETURNED'}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                            Returned
-                        </span>
+                    Returned
+                </span>
         <span th:if="${loan.status.name() == 'OVERDUE'}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                            Overdue
-                        </span>
+                    Overdue
+                </span>
         <span th:if="${loan.status.name() == 'RESERVED'}" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                            Reserved
-                        </span>
+                    Reserved
+                </span>
       </td>
       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
         <div class="flex space-x-2">

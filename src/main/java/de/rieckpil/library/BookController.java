@@ -2,6 +2,7 @@ package de.rieckpil.library;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,6 +29,9 @@ public class BookController {
   private final BookLoanRepository bookLoanRepository;
 
   private static final Logger LOG = LoggerFactory.getLogger(BookController.class);
+  private static final Pattern ISBN_PATTERN =
+      Pattern.compile(
+          "^(?:ISBN(?:-1[03])?:? )?(?=[0-9X]{10}$|(?=(?:[0-9]+[- ]){3})[- 0-9X]{13}$|97[89][0-9]{10}$|(?=(?:[0-9]+[- ]){4})[- 0-9]{17}$)(?:97[89][- ]?)?[0-9]{1,5}[- ]?[0-9]+[- ]?[0-9]+[- ]?[0-9X]$");
 
   public BookController(BookService bookService, BookLoanRepository bookLoanRepository) {
     this.bookService = bookService;
@@ -218,6 +223,60 @@ public class BookController {
       LOG.error("Unexpected error during ISBN lookup: {}", e.getMessage(), e);
       model.addAttribute("error", "An unexpected error occurred: " + e.getMessage());
       return "books/isbn-lookup";
+    }
+  }
+
+  // New HTMX endpoints
+
+  @GetMapping(value = "/validate-isbn", produces = MediaType.TEXT_HTML_VALUE)
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  public String validateIsbn(@RequestParam String isbn, Model model) {
+    boolean isValid = ISBN_PATTERN.matcher(isbn).matches();
+    model.addAttribute("valid", isValid);
+    return "books/fragments :: isbn-validation";
+  }
+
+  @GetMapping(value = "/validate-field", produces = MediaType.TEXT_HTML_VALUE)
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  public String validateField(@RequestParam String value, Model model) {
+    boolean isValid = value != null && !value.isBlank();
+    model.addAttribute("valid", isValid);
+    return "books/fragments :: field-validation";
+  }
+
+  @GetMapping(value = "/preview-cover", produces = MediaType.TEXT_HTML_VALUE)
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  public String previewCover(@RequestParam String imageUrl, Model model) {
+    model.addAttribute("imageUrl", imageUrl);
+    return "books/fragments :: cover-preview";
+  }
+
+  @PostMapping(value = "/lookup-isbn-ajax", produces = MediaType.TEXT_HTML_VALUE)
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  public String lookupIsbnAjax(@RequestParam String isbn, Model model) {
+    if (!ISBN_PATTERN.matcher(isbn).matches()) {
+      model.addAttribute("error", "Invalid ISBN format");
+      return "books/fragments :: isbn-lookup-results";
+    }
+
+    try {
+      // Check if book already exists
+      try {
+        Book existingBook = bookService.getBookByIsbn(isbn);
+        model.addAttribute("book", existingBook);
+        return "books/fragments :: isbn-lookup-results";
+      } catch (BookNotFoundException e) {
+        // Book doesn't exist, proceed with lookup
+      }
+
+      // Do the lookup without creating the book
+      Book book = bookService.lookupAndCreateBook(isbn).get();
+      model.addAttribute("book", book);
+      return "books/fragments :: isbn-lookup-results";
+    } catch (Exception e) {
+      LOG.error("Error during ISBN lookup: {}", e.getMessage(), e);
+      model.addAttribute("error", "Error looking up ISBN: " + e.getMessage());
+      return "books/fragments :: isbn-lookup-results";
     }
   }
 }
