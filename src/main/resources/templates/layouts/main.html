@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title th:replace="${title}">MockShelf</title>
 
-  <link th:href="@{/webjars/tailwindcss/dist/tailwind.min.css}" rel="stylesheet">
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
 
   <script th:src="@{/webjars/alpinejs/dist/cdn.min.js}" defer></script>
   <script th:src="@{/webjars/htmx.org/dist/htmx.min.js}"></script>
@@ -45,54 +45,214 @@
       @apply p-4 bg-red-50 border-l-4 border-red-400 text-red-700;
     }
   </style>
-</head>
-<body class="bg-gray-50 min-h-screen flex flex-col">
+</head><body class="bg-gray-50 min-h-screen flex flex-col">
 <!-- Header/Navigation -->
-<header class="bg-white shadow-sm">
-  <div class="container mx-auto px-4 py-4">
-    <div class="flex justify-between items-center">
-      <!-- Logo/Brand -->
-      <div class="flex items-center">
-        <a href="/" class="text-xl font-bold text-blue-600">MockShelf</a>
-        <span class="text-xs ml-2 text-gray-500">Testing the Boundaries of Library Science</span>
+<header class="bg-white shadow-sm sticky top-0 z-10">
+  <div class="container mx-auto px-4 py-2">
+    <div x-data="{ mobileMenuOpen: false }" class="relative">
+      <!-- Desktop Navigation -->
+      <div class="flex justify-between items-center">
+        <!-- Logo/Brand -->
+        <div class="flex items-center">
+          <a href="/" class="flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+            <span class="text-xl font-bold text-blue-600">MockShelf</span>
+          </a>
+          <span class="text-xs ml-2 text-gray-500 hidden md:inline">Testing the Boundaries of Library Science</span>
+        </div>
+
+        <!-- Mobile menu button -->
+        <div class="md:hidden">
+          <button @click="mobileMenuOpen = !mobileMenuOpen" class="p-2 text-gray-600 hover:text-gray-900 focus:outline-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    x-bind:d="mobileMenuOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Desktop Navigation Links -->
+        <nav class="hidden md:flex items-center space-x-6">
+          <a href="/" class="text-gray-600 hover:text-gray-900 hover:underline">Home</a>
+          <a href="/books" class="text-gray-600 hover:text-gray-900 hover:underline">Books</a>
+
+          <div sec:authorize="hasRole('ROLE_USER')" class="relative" x-data="{ userMenuOpen: false }">
+            <a href="/loans/my-loans" class="text-gray-600 hover:text-gray-900 hover:underline">My Loans</a>
+          </div>
+
+          <div sec:authorize="hasRole('ROLE_ADMIN')" class="relative" x-data="{ adminMenuOpen: false }">
+            <button @click="adminMenuOpen = !adminMenuOpen"
+                    class="flex items-center text-gray-600 hover:text-gray-900 focus:outline-none">
+              <span>Admin</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            <!-- Admin Dropdown Menu -->
+            <div x-show="adminMenuOpen"
+                 @click.away="adminMenuOpen = false"
+                 x-transition:enter="transition ease-out duration-100"
+                 x-transition:enter-start="transform opacity-0 scale-95"
+                 x-transition:enter-end="transform opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-75"
+                 x-transition:leave-start="transform opacity-100 scale-100"
+                 x-transition:leave-end="transform opacity-0 scale-95"
+                 class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+              <a href="/admin/dashboard" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Dashboard</a>
+              <a href="/admin/books" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Manage Books</a>
+              <a href="/admin/users" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Manage Users</a>
+              <a href="/admin/locations" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Manage Locations</a>
+              <a href="/admin/notifications" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Notifications</a>
+            </div>
+          </div>
+
+          <!-- Authentication -->
+          <div sec:authorize="isAuthenticated()" class="relative" x-data="{ profileMenuOpen: false }">
+            <button @click="profileMenuOpen = !profileMenuOpen"
+                    class="flex items-center text-gray-600 hover:text-gray-900 focus:outline-none">
+              <span sec:authentication="name" class="text-gray-600 mr-1">Username</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            <!-- Profile Dropdown Menu -->
+            <div x-show="profileMenuOpen"
+                 @click.away="profileMenuOpen = false"
+                 x-transition:enter="transition ease-out duration-100"
+                 x-transition:enter-start="transform opacity-0 scale-95"
+                 x-transition:enter-end="transform opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-75"
+                 x-transition:leave-start="transform opacity-100 scale-100"
+                 x-transition:leave-end="transform opacity-0 scale-95"
+                 class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+              <a href="/account/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Your Profile</a>
+              <a href="/loans/my-loans" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Loans</a>
+              <div class="border-t border-gray-100"></div>
+              <a href="/logout" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
+            </div>
+          </div>
+
+          <a sec:authorize="!isAuthenticated()" href="/login" class="btn-primary text-sm py-1.5">Login</a>
+        </nav>
       </div>
 
-      <!-- Navigation -->
-      <nav class="flex space-x-4">
-        <a href="/" class="text-gray-600 hover:text-gray-900">Home</a>
-        <a href="/books" class="text-gray-600 hover:text-gray-900">Books</a>
-        <div sec:authorize="hasRole('ROLE_USER')">
-          <a href="/loans/my-loans" class="text-gray-600 hover:text-gray-900">My Loans</a>
+      <!-- Mobile Navigation Menu -->
+      <div x-show="mobileMenuOpen"
+           x-transition:enter="transition ease-out duration-100"
+           x-transition:enter-start="transform opacity-0 scale-95"
+           x-transition:enter-end="transform opacity-100 scale-100"
+           x-transition:leave="transition ease-in duration-75"
+           x-transition:leave-start="transform opacity-100 scale-100"
+           x-transition:leave-end="transform opacity-0 scale-95"
+           class="md:hidden absolute top-full left-0 right-0 bg-white shadow-md rounded-b-lg z-50">
+        <div class="px-2 pt-2 pb-3 space-y-1">
+          <a href="/" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">Home</a>
+          <a href="/books" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">Books</a>
+
+          <a sec:authorize="hasRole('ROLE_USER')" href="/loans/my-loans" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">My Loans</a>
+
+          <div sec:authorize="hasRole('ROLE_ADMIN')" x-data="{ mobileAdminOpen: false }">
+            <button @click="mobileAdminOpen = !mobileAdminOpen" class="flex items-center justify-between w-full px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+              <span>Admin</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            <div x-show="mobileAdminOpen" class="pl-4">
+              <a href="/admin/dashboard" class="block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">Dashboard</a>
+              <a href="/admin/books" class="block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">Manage Books</a>
+              <a href="/admin/users" class="block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">Manage Users</a>
+              <a href="/admin/locations" class="block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">Manage Locations</a>
+              <a href="/admin/notifications" class="block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">Notifications</a>
+            </div>
+          </div>
+
+          <div sec:authorize="isAuthenticated()" class="border-t border-gray-200 pt-4">
+            <div class="px-3 py-2">
+              <div class="font-medium">Logged in as:</div>
+              <div sec:authentication="name" class="text-sm text-gray-600">Username</div>
+            </div>
+            <a href="/loans/my-loans" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">My Loans</a>
+            <a href="/account/profile" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">Your Profile</a>
+            <a href="/logout" class="block px-3 py-2 rounded-md text-base font-medium text-red-600 hover:text-red-700 hover:bg-red-50">Logout</a>
+          </div>
+
+          <a sec:authorize="!isAuthenticated()" href="/login" class="block px-3 py-2 rounded-md text-base font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50">Login</a>
         </div>
-        <div sec:authorize="hasRole('ROLE_ADMIN')">
-          <a href="/admin/dashboard" class="text-gray-600 hover:text-gray-900">Admin</a>
-        </div>
-        <div sec:authorize="isAuthenticated()">
-          <span sec:authentication="name" class="text-gray-600 mr-2"></span>
-          <a href="/logout" class="text-red-600 hover:text-red-800">Logout</a>
-        </div>
-        <div sec:authorize="!isAuthenticated()">
-          <a href="/login" class="text-gray-600 hover:text-gray-900">Login</a>
-        </div>
-      </nav>
+      </div>
     </div>
   </div>
 </header>
 
 <!-- Main Content -->
-<div th:replace="${content}">
+<div th:replace="${content}" class="flex-grow">
   Main content goes here
 </div>
 
 <!-- Footer -->
 <footer class="bg-white border-t mt-auto">
-  <div class="container mx-auto px-4 py-6">
-    <div class="flex justify-between items-center">
-      <div class="text-sm text-gray-500">
-        &copy; ${year} MockShelf Library. All rights reserved.
+  <div class="container mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <!-- Logo and Mission -->
+      <div class="col-span-1 md:col-span-2">
+        <div class="flex items-center mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+          <span class="text-xl font-bold text-blue-600">MockShelf</span>
+        </div>
+        <p class="text-gray-600 mb-4">
+          A library management system with mocked services for testing and development.
+        </p>
+        <p class="text-sm text-gray-500">
+          &copy; <span th:text="${#calendars.format(#calendars.createNow(), 'yyyy')}">2025</span> MockShelf Library - A Spring Boot Testing Workshop Application
+        </p>
       </div>
-      <div class="text-sm text-gray-500">
-        A Spring Boot Testing Workshop Application
+
+      <!-- Quick Links -->
+      <div>
+        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Quick Links</h3>
+        <ul class="space-y-2">
+          <li><a href="/" class="text-gray-600 hover:text-gray-800">Home</a></li>
+          <li><a href="/books" class="text-gray-600 hover:text-gray-800">Browse Books</a></li>
+          <li><a sec:authorize="hasRole('ROLE_USER')" href="/loans/my-loans" class="text-gray-600 hover:text-gray-800">My Loans</a></li>
+          <li><a sec:authorize="!isAuthenticated()" href="/login" class="text-gray-600 hover:text-gray-800">Login</a></li>
+        </ul>
+      </div>
+
+      <!-- Admin Links -->
+      <div sec:authorize="hasRole('ROLE_ADMIN')">
+        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Admin</h3>
+        <ul class="space-y-2">
+          <li><a href="/admin/dashboard" class="text-gray-600 hover:text-gray-800">Dashboard</a></li>
+          <li><a href="/admin/books" class="text-gray-600 hover:text-gray-800">Manage Books</a></li>
+          <li><a href="/admin/users" class="text-gray-600 hover:text-gray-800">Manage Users</a></li>
+          <li><a href="/admin/locations" class="text-gray-600 hover:text-gray-800">Manage Locations</a></li>
+        </ul>
+      </div>
+
+      <!-- Service Status -->
+      <div sec:authorize="!hasRole('ROLE_ADMIN')">
+        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Services</h3>
+        <ul class="space-y-2 text-gray-600">
+          <li class="flex items-center">
+            <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+            Database
+          </li>
+          <li class="flex items-center">
+            <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+            Email Service
+          </li>
+          <li class="flex items-center">
+            <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+            Authentication
+          </li>
+        </ul>
       </div>
     </div>
   </div>

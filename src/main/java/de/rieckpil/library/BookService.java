@@ -149,8 +149,8 @@ public class BookService {
     return bookRepository.count();
   }
 
-  public int countAvailableBooks() {
-    return bookRepository.findByAvailable(true).size();
+  public Long countAvailableBooks() {
+    return Long.valueOf(bookRepository.findByAvailable(true).size());
   }
 
   public List<Book> getRecentlyAddedBooks(int amount) {
