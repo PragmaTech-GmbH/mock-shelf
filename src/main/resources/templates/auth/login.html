@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout(~{::title}, ~{::main})}">
+<head>
+  <title>Login | MockShelf</title>
+</head>
+<body>
+<main>
+  <div class="container mx-auto px-4 py-8">
+    <div class="max-w-md mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="p-6">
+        <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Login to MockShelf</h1>
+
+        <div th:if="${error}" class="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm text-red-700" th:text="${error}">Authentication failed</p>
+            </div>
+          </div>
+        </div>
+
+        <a th:href="@{/oauth2/authorization/keycloak}" class="btn-primary w-full text-center flex justify-center items-center">
+          <svg class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 005 10a6 6 0 0010-4.5c-.5.263-1.21.527-1.83.527C11.635 6.03 11.27 6 10.896 6c-.335.001-.67.03-1 .087C8.917 6.242 8.039 6.563 7.2 7 6.361 7.437 5.6 8.24 5 9.5c-.5.813-.376 1.647.12 2.5 1.016 1.732 3.037 3 6.38 3 1.898 0 3.277-.236 4.5-.713V10z" clip-rule="evenodd"/>
+          </svg>
+          Sign in with Keycloak
+        </a>
+
+        <div class="mt-6 text-center">
+          <p class="text-sm text-gray-600">Need an account? Contact your administrator.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

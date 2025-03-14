@@ -3,7 +3,12 @@ package de.rieckpil.library.model;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
@@ -45,71 +50,71 @@ public class LibraryUser {
     return id;
   }
 
-  void setId(UUID id) {
+  public void setId(UUID id) {
     this.id = id;
   }
 
-  String getKeycloakId() {
+  public String getKeycloakId() {
     return keycloakId;
   }
 
-  void setKeycloakId(String keycloakId) {
+  public void setKeycloakId(String keycloakId) {
     this.keycloakId = keycloakId;
   }
 
-  String getFirstName() {
+  public String getFirstName() {
     return firstName;
   }
 
-  void setFirstName(String firstName) {
+  public void setFirstName(String firstName) {
     this.firstName = firstName;
   }
 
-  String getLastName() {
+  public String getLastName() {
     return lastName;
   }
 
-  void setLastName(String lastName) {
+  public void setLastName(String lastName) {
     this.lastName = lastName;
   }
 
-  String getEmail() {
+  public String getEmail() {
     return email;
   }
 
-  void setEmail(String email) {
+  public void setEmail(String email) {
     this.email = email;
   }
 
-  String getPhone() {
+  public String getPhone() {
     return phone;
   }
 
-  void setPhone(String phone) {
+  public void setPhone(String phone) {
     this.phone = phone;
   }
 
-  String getAddress() {
+  public String getAddress() {
     return address;
   }
 
-  void setAddress(String address) {
+  public void setAddress(String address) {
     this.address = address;
   }
 
-  ZonedDateTime getRegisteredAt() {
+  public ZonedDateTime getRegisteredAt() {
     return registeredAt;
   }
 
-  void setRegisteredAt(ZonedDateTime registeredAt) {
+  public void setRegisteredAt(ZonedDateTime registeredAt) {
     this.registeredAt = registeredAt;
   }
 
-  Boolean getAdmin() {
+  public Boolean getAdmin() {
     return isAdmin;
   }
 
-  void setAdmin(Boolean admin) {
+  public void setAdmin(Boolean admin) {
     isAdmin = admin;
   }
 }
