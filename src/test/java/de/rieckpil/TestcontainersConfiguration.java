@@ -1,31 +1,32 @@
 package de.rieckpil;
 
-import de.rieckpil.setup.KeycloakConnectionDetails;
-import de.rieckpil.setup.KeycloakContainer;
+import de.rieckpil.library.setup.KeycloakContainer;
+import de.rieckpil.library.setup.MailDevContainer;
+import de.rieckpil.library.setup.WireMockContainer;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
+import org.testcontainers.activemq.ArtemisContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.DockerImageName;
+
+import static org.testcontainers.utility.DockerImageName.parse;
 
 @TestConfiguration(proxyBeanMethods = false)
 class TestcontainersConfiguration {
 
-  //  @Bean
-  //  @ServiceConnection
-  //  ArtemisContainer artemisContainer() {
-  //    return new
-  // ArtemisContainer(DockerImageName.parse("rmohr/activemq:5.15.9").asCompatibleSubstituteFor("apache/activemq-artemis"))
-  //        .withExposedPorts(61616, 8161)
-  //        .withEnv("ACTIVEMQ_ADMIN_LOGIN", "admin")
-  //        .withEnv("ACTIVEMQ_ADMIN_PASSWORD", "admin")
-  //        .waitingFor(Wait.forHttp("/").forPort(8161));
-  //  }
+  @Bean
+  @ServiceConnection
+  ArtemisContainer artemisContainer() {
+    return new ArtemisContainer(parse("rmohr/activemq:5.15.9").asCompatibleSubstituteFor("apache/activemq-artemis"))
+      .withExposedPorts(61616, 8161)
+      .withPassword("activemq")
+      .withUser("activemq");
+  }
 
   @Bean
   @ServiceConnection
   PostgreSQLContainer<?> postgresContainer() {
-    return new PostgreSQLContainer<>(DockerImageName.parse("postgres:15"))
+    return new PostgreSQLContainer<>(parse("postgres:15"))
       .withDatabaseName("mock-shelf")
       .withUsername("postgres")
       .withPassword("postgres");
@@ -37,22 +38,15 @@ class TestcontainersConfiguration {
     return new KeycloakContainer();
   }
 
-  //  @Bean
-  ////  @ServiceConnection
-  //  GenericContainer<?> wiremockContainer() {
-  //    return new GenericContainer<>(DockerImageName.parse("wiremock/wiremock:2.35.0"))
-  //        .withExposedPorts(8080)
-  //        .withFileSystemBind("./docker/wiremock/mappings", "/home/wiremock/mappings")
-  //        .withFileSystemBind("./docker/wiremock/__files", "/home/wiremock/__files")
-  //        .withCommand("--verbose", "--global-response-templating");
-  //  }
-  //
-  //  @Bean
-  ////  @ServiceConnection
-  //  GenericContainer<?> maildevContainer() {
-  //    return new GenericContainer<>(DockerImageName.parse("maildev/maildev:2.0.5"))
-  //        .withExposedPorts(1025, 1080)
-  //        .withEnv("MAILDEV_INCOMING_USER", "user")
-  //        .withEnv("MAILDEV_INCOMING_PASS", "password");
-  //  }
+  @Bean
+  @ServiceConnection
+  WireMockContainer wireMockContainer() {
+    return new WireMockContainer();
+  }
+
+  @Bean
+  @ServiceConnection
+  MailDevContainer mailDevContainer() {
+    return new MailDevContainer();
+  }
 }

@@ -1,4 +1,4 @@
-package de.rieckpil.setup;
+package de.rieckpil.library.setup;
 
 import org.springframework.boot.autoconfigure.service.connection.ConnectionDetails;
 import org.springframework.security.oauth2.jwt.JwtDecoder;

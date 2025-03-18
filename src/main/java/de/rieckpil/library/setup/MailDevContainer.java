@@ -1,4 +1,4 @@
-package de.rieckpil.setup;
+package de.rieckpil.library.setup;
 
 import java.time.Duration;
 

@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.service.connection.ConnectionDetailsFactory=\
- de.rieckpil.setup.KeycloakContainerConnectionDetailsFactory
+ de.rieckpil.library.setup.KeycloakContainerConnectionDetailsFactory

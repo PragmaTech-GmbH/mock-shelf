@@ -1,4 +1,4 @@
-package de.rieckpil.setup;
+package de.rieckpil.library.setup;
 
 import org.springframework.boot.autoconfigure.mail.MailProperties;
 import org.springframework.boot.testcontainers.service.connection.ContainerConnectionDetailsFactory;
