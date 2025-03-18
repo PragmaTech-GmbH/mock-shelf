@@ -13,6 +13,31 @@ pre-commit install
 Export realm:
 
 ```
+# Create a Docker volume to share Keycloak data
+docker volume create keycloak_data
+
+# Run Keycloak with this volume
+docker run -d --name keycloak \
+  -v keycloak_data:/opt/keycloak/data \
+  -p 8888:8080 \
+  -p 9000:9000 \
+  -e KEYCLOAK_ADMIN=admin \
+  -e KEYCLOAK_ADMIN_PASSWORD=admin \
+  -e KC_DB=dev-file \
+  -e KC_HEALTH_ENABLED=true \
+  quay.io/keycloak/keycloak:26.1 \
+  start-dev
+
+# Configure your realm through the UI...
+# Then stop that container
+docker stop keycloak
+
+# Run a new container just for export using the same volume
+docker run --rm -it \
+  -v keycloak_data:/opt/keycloak/data \
+  -v $(pwd):/export \
+  quay.io/keycloak/keycloak:26.1 \
+  export --dir /export --realm spring --users realm_file
 ```
 
 ## MockShelf Architecture Documentation
