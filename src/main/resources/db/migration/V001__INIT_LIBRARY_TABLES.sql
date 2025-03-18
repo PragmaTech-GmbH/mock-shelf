@@ -1,5 +1,6 @@
 -- Create extension for UUID support
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE
+EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Books table
 CREATE TABLE books
@@ -66,13 +67,14 @@ CREATE TABLE book_loans
 -- Notifications table for tracking sent notifications
 CREATE TABLE notifications
 (
-  id      UUID PRIMARY KEY         DEFAULT uuid_generate_v4(),
-  loan_id UUID         NOT NULL REFERENCES book_loans (id),
-  type    VARCHAR(50)  NOT NULL,                     -- EMAIL, SMS, etc.
-  subject VARCHAR(255) NOT NULL,
-  content TEXT         NOT NULL,
-  sent_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  status  VARCHAR(20)  NOT NULL    DEFAULT 'QUEUED', -- QUEUED, SENT, FAILED
+  id            UUID PRIMARY KEY         DEFAULT uuid_generate_v4(),
+  loan_id       UUID         NOT NULL REFERENCES book_loans (id),
+  type          VARCHAR(50)  NOT NULL,                     -- EMAIL, SMS, etc.
+  subject       VARCHAR(255) NOT NULL,
+  content       TEXT         NOT NULL,
+  error_message TEXT,
+  sent_at       TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  status        VARCHAR(20)  NOT NULL    DEFAULT 'QUEUED', -- QUEUED, SENT, FAILED
 
   CONSTRAINT notification_status_check CHECK (status IN ('QUEUED', 'SENT', 'FAILED'))
 );
@@ -103,23 +105,26 @@ CREATE INDEX idx_notifications_loan_id ON notifications (loan_id);
 CREATE INDEX idx_book_reviews_book_id ON book_reviews (book_id);
 
 -- Add trigger to update 'updated_at' timestamp
-CREATE OR REPLACE FUNCTION update_modified_column()
+CREATE
+OR REPLACE FUNCTION update_modified_column()
   RETURNS TRIGGER AS
 $$
 BEGIN
-  NEW.updated_at = CURRENT_TIMESTAMP;
-  RETURN NEW;
+  NEW.updated_at
+= CURRENT_TIMESTAMP;
+RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$
+LANGUAGE plpgsql;
 
 CREATE TRIGGER update_books_modtime
   BEFORE UPDATE
   ON books
   FOR EACH ROW
-EXECUTE PROCEDURE update_modified_column();
+  EXECUTE PROCEDURE update_modified_column();
 
 CREATE TRIGGER update_book_loans_modtime
   BEFORE UPDATE
   ON book_loans
   FOR EACH ROW
-EXECUTE PROCEDURE update_modified_column();
+  EXECUTE PROCEDURE update_modified_column();

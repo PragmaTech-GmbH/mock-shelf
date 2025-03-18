@@ -34,12 +34,12 @@ public class WebSecurityConfiguration {
                     .authenticated()
                     .anyRequest()
                     .authenticated())
-        .oauth2Login(
-            oauth2 ->
-                oauth2
-                    .defaultSuccessUrl("/", true)
-                    .failureUrl("/login?error=true")
-                    .loginPage("/login"))
+//        .oauth2Login(
+//            oauth2 ->
+//                oauth2
+//                    .defaultSuccessUrl("/", true)
+//                    .failureUrl("/login?error=true")
+//                    .loginPage("/login"))
         .logout(
             logout ->
                 logout

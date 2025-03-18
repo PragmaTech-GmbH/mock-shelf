@@ -8,7 +8,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.web.reactive.function.client.WebClient;
 
-@AutoConfiguration
+//@AutoConfiguration
 public class TestContainersServiceConnectionAutoConfiguration {
 
   /**
