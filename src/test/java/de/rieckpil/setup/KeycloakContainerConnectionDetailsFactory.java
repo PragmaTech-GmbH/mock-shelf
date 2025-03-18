@@ -8,6 +8,11 @@ public class KeycloakContainerConnectionDetailsFactory
   extends ContainerConnectionDetailsFactory<KeycloakContainer, KeycloakConnectionDetails> {
 
   @Override
+  protected boolean sourceAccepts(ContainerConnectionSource<KeycloakContainer> source, Class<?> requiredContainerType, Class<?> requiredConnectionDetailsType) {
+    return requiredConnectionDetailsType.isAssignableFrom(KeycloakConnectionDetails.class);
+  }
+
+  @Override
   protected KeycloakConnectionDetails getContainerConnectionDetails(ContainerConnectionSource<KeycloakContainer> source) {
     return new KeycloakContainerContainerConnectionDetails(source);
   }
