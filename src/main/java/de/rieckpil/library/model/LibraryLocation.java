@@ -3,7 +3,12 @@ package de.rieckpil.library.model;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
@@ -31,55 +36,55 @@ public class LibraryLocation {
   @Column(updatable = false)
   private ZonedDateTime createdAt;
 
-  UUID getId() {
+  public UUID getId() {
     return id;
   }
 
-  void setId(UUID id) {
+  public void setId(UUID id) {
     this.id = id;
   }
 
-  String getName() {
+  public String getName() {
     return name;
   }
 
-  void setName(String name) {
+  public void setName(String name) {
     this.name = name;
   }
 
-  String getAddress() {
+  public String getAddress() {
     return address;
   }
 
-  void setAddress(String address) {
+  public void setAddress(String address) {
     this.address = address;
   }
 
-  String getPhone() {
+  public String getPhone() {
     return phone;
   }
 
-  void setPhone(String phone) {
+  public void setPhone(String phone) {
     this.phone = phone;
   }
 
-  String getEmail() {
+  public String getEmail() {
     return email;
   }
 
-  void setEmail(String email) {
+  public void setEmail(String email) {
     this.email = email;
   }
 
-  String getOpeningHours() {
+  public String getOpeningHours() {
     return openingHours;
   }
 
-  void setOpeningHours(String openingHours) {
+  public void setOpeningHours(String openingHours) {
     this.openingHours = openingHours;
   }
 
-  ZonedDateTime getCreatedAt() {
+  public ZonedDateTime getCreatedAt() {
     return createdAt;
   }
 

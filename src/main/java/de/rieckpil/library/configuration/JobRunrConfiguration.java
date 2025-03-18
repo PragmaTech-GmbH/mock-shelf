@@ -16,7 +16,6 @@ public class JobRunrConfiguration {
     this.notificationService = notificationService;
   }
 
-  @Bean
   public void scheduleRecurringJobs(JobScheduler jobScheduler) {
     // Schedule the daily notification jobs to run at 1:00 AM every day
     jobScheduler.scheduleRecurrently(

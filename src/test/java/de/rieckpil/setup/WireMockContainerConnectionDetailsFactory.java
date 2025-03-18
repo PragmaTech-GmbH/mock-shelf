@@ -3,7 +3,7 @@ package de.rieckpil.setup;
 import org.springframework.boot.testcontainers.service.connection.ContainerConnectionDetailsFactory;
 import org.springframework.boot.testcontainers.service.connection.ContainerConnectionSource;
 
-public class WireMockConnectionDetailsFactory
+public class WireMockContainerConnectionDetailsFactory
   extends ContainerConnectionDetailsFactory<WireMockContainer, WireMockConnectionDetails> {
 
   @Override

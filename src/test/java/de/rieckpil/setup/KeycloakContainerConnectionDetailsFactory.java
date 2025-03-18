@@ -1,14 +1,12 @@
 package de.rieckpil.setup;
 
-import org.springframework.boot.autoconfigure.service.connection.ConnectionDetailsFactory;
 import org.springframework.boot.testcontainers.service.connection.ContainerConnectionDetailsFactory;
 import org.springframework.boot.testcontainers.service.connection.ContainerConnectionSource;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.testcontainers.containers.GenericContainer;
 
-public class KeycloakConnectionDetailsFactory  extends ContainerConnectionDetailsFactory<KeycloakContainer, KeycloakConnectionDetails> {
-
+public class KeycloakContainerConnectionDetailsFactory
+  extends ContainerConnectionDetailsFactory<KeycloakContainer, KeycloakConnectionDetails> {
 
   @Override
   protected KeycloakConnectionDetails getContainerConnectionDetails(ContainerConnectionSource<KeycloakContainer> source) {
