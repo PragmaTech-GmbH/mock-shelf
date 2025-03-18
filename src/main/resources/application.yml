@@ -16,8 +16,8 @@ spring:
       client:
         registration:
           keycloak:
-            client-id: your-client-id
-            client-secret: your-client-secret
+            client-id: mock-shelf
+            client-secret: sK5v1zhHV7EkP5YhCcrnBvUxBsmrnDCo
             scope: openid,profile,email
         provider:
           keycloak:

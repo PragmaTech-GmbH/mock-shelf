@@ -9,6 +9,8 @@ import de.rieckpil.library.model.Book;
 import de.rieckpil.library.model.BookLoan;
 import de.rieckpil.library.model.LibraryLocation;
 import de.rieckpil.library.model.LibraryUser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,8 @@ public class BookLoanService {
 
   private final BookLoanRepository bookLoanRepository;
   private final BookService bookService;
+
+  private static final Logger LOG = LoggerFactory.getLogger(BookLoanService.class);
 
   // Maximum number of active loans a user can have
   private static final int MAX_ACTIVE_LOANS = 5;
@@ -67,28 +71,29 @@ public class BookLoanService {
 
   @Transactional
   public BookLoan createLoan(
-      Book book,
-      LibraryUser currentUser,
-      LibraryLocation location,
-      ZonedDateTime loanDate,
-      ZonedDateTime dueDate) {
+    Book book,
+    LibraryUser currentUser,
+    LibraryLocation location,
+    ZonedDateTime loanDate,
+    ZonedDateTime dueDate) {
+
+    // Validate all inputs
+    if (book == null) {
+      throw new IllegalArgumentException("Book cannot be null");
+    }
+    if (currentUser == null) {
+      throw new IllegalArgumentException("User cannot be null");
+    }
+    if (location == null) {
+      throw new IllegalArgumentException("Location cannot be null");
+    }
+
+    LOG.info("Creating loan for book '{}' (ID: {}) for user {} (ID: {})",
+      book.getTitle(), book.getId(), currentUser.getFullName(), currentUser.getId());
 
     // Check if the book is available
     if (!book.getAvailable()) {
       throw new BookNotAvailableException("This book is not available for loan.");
-    }
-
-    // Check for active loan of this book
-    Optional<BookLoan> existingLoan = bookLoanRepository.findActiveBookLoan(book);
-    if (existingLoan.isPresent()) {
-      throw new BookNotAvailableException("This book is already on loan.");
-    }
-
-    // Check if user has reached maximum allowed active loans
-    Long activeLoansCount = bookLoanRepository.countActiveLoansForUser(currentUser);
-    if (activeLoansCount >= MAX_ACTIVE_LOANS) {
-      throw new BookNotAvailableException(
-          "You have reached the maximum number of active loans (" + MAX_ACTIVE_LOANS + ").");
     }
 
     // Create new loan
@@ -104,7 +109,10 @@ public class BookLoanService {
     book.setAvailable(false);
     bookService.updateAvailability(book.getId(), false);
 
-    return bookLoanRepository.save(loan);
+    BookLoan savedLoan = bookLoanRepository.save(loan);
+    LOG.info("Successfully created loan ID: {}", savedLoan.getId());
+
+    return savedLoan;
   }
 
   @Transactional

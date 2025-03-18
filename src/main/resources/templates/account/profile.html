@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout(~{::title}, ~{::main})}">
+<head>
+  <title>My Account Profile | MockShelf</title>
+</head>
+<body>
+<main>
+  <div class="container mx-auto px-4 py-8">
+    <!-- Page Header -->
+    <h1 class="text-3xl font-semibold text-gray-800 mb-6">My Account Profile</h1>
+
+    <!-- Success Message -->
+    <div th:if="${successMessage}" class="alert-success mb-6">
+      <span th:text="${successMessage}"></span>
+    </div>
+
+    <!-- User Profile -->
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+      <div class="p-6">
+        <div class="md:flex">
+          <!-- Avatar Section -->
+          <div class="md:w-1/4 flex flex-col items-center mb-6 md:mb-0">
+            <div class="w-24 h-24 rounded-full bg-blue-500 text-white flex items-center justify-center text-2xl font-bold mb-4">
+              <span th:text="${#strings.substring(user.firstName, 0, 1) + #strings.substring(user.lastName, 0, 1)}">UN</span>
+            </div>
+            <div class="text-center">
+              <h2 class="text-xl font-semibold" th:text="${user.fullName}">User Name</h2>
+              <p class="text-gray-600" th:text="${user.email}">user@example.com</p>
+              <p class="text-sm text-gray-500 mt-2">
+                Member since <span th:text="${#temporals.format(user.registeredAt, 'MMMM d, yyyy')}">January 1, 2023</span>
+              </p>
+            </div>
+            <div class="mt-4 text-center">
+              <a th:href="@{/loans/my-loans}" class="text-blue-600 hover:text-blue-800 flex items-center justify-center">
+                <span class="mr-1">📚</span> My Loans (<span th:text="${activeLoansCount}">0</span>)
+              </a>
+            </div>
+          </div>
+
+          <!-- Profile Form -->
+          <div class="md:w-3/4 md:pl-8">
+            <form th:action="@{/account/profile}" th:object="${profileForm}" method="post" class="space-y-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- First Name -->
+                <div class="form-group">
+                  <label for="firstName" class="form-label">First Name *</label>
+                  <input th:field="*{firstName}" type="text" id="firstName" class="form-input"
+                         placeholder="Your first name" required>
+                  <div th:if="${#fields.hasErrors('firstName')}" class="text-red-500 text-xs mt-1"
+                       th:errors="*{firstName}">First name error</div>
+                </div>
+
+                <!-- Last Name -->
+                <div class="form-group">
+                  <label for="lastName" class="form-label">Last Name *</label>
+                  <input th:field="*{lastName}" type="text" id="lastName" class="form-input"
+                         placeholder="Your last name" required>
+                  <div th:if="${#fields.hasErrors('lastName')}" class="text-red-500 text-xs mt-1"
+                       th:errors="*{lastName}">Last name error</div>
+                </div>
+
+                <!-- Email -->
+                <div class="form-group">
+                  <label for="email" class="form-label">Email *</label>
+                  <input th:field="*{email}" type="email" id="email" class="form-input"
+                         placeholder="Your email address" required
+                         th:readonly="${user.keycloakId != null}">
+                  <div th:if="${#fields.hasErrors('email')}" class="text-red-500 text-xs mt-1"
+                       th:errors="*{email}">Email error</div>
+                  <div th:if="${user.keycloakId != null}" class="text-xs text-gray-500 mt-1">
+                    Email is managed by your authentication provider and cannot be changed here.
+                  </div>
+                </div>
+
+                <!-- Phone -->
+                <div class="form-group">
+                  <label for="phone" class="form-label">Phone</label>
+                  <input th:field="*{phone}" type="tel" id="phone" class="form-input"
+                         placeholder="Your phone number">
+                  <div th:if="${#fields.hasErrors('phone')}" class="text-red-500 text-xs mt-1"
+                       th:errors="*{phone}">Phone error</div>
+                </div>
+              </div>
+
+              <!-- Address -->
+              <div class="form-group">
+                <label for="address" class="form-label">Address</label>
+                <textarea th:field="*{address}" id="address" rows="3" class="form-input"
+                          placeholder="Your mailing address"></textarea>
+                <div th:if="${#fields.hasErrors('address')}" class="text-red-500 text-xs mt-1"
+                     th:errors="*{address}">Address error</div>
+              </div>
+
+              <!-- Submit Button -->
+              <div class="flex justify-end">
+                <button type="submit" class="btn-primary">Update Profile</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Account Security Section -->
+    <div class="bg-white shadow-md rounded-lg overflow-hidden mt-8">
+      <div class="p-6">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Account Security</h2>
+
+        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm text-blue-700">
+                Your account is managed by an external authentication provider.
+                Password and security settings should be managed through that provider.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <a href="/logout" class="btn-secondary">
+            <span class="mr-1">🚪</span> Sign Out
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

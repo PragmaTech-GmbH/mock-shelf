@@ -9,6 +9,8 @@ import de.rieckpil.library.model.Book;
 import de.rieckpil.library.model.BookLoan;
 import de.rieckpil.library.model.LibraryLocation;
 import de.rieckpil.library.model.LibraryUser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,6 +31,8 @@ public class BookLoanController {
   private final BookService bookService;
   private final UserService userService;
   private final LibraryLocationService locationService;
+
+  private static final Logger LOG = LoggerFactory.getLogger(BookLoanController.class);
 
   public BookLoanController(
       BookLoanService loanService,
@@ -134,20 +138,30 @@ public class BookLoanController {
     return "loans/fragments :: due-date-preview";
   }
 
-  /** Process loan request */
   @PostMapping("/create")
   @PreAuthorize("isAuthenticated()")
   public String createLoan(
-      @RequestParam UUID bookId,
-      @RequestParam UUID pickupLocationId,
-      @RequestParam(defaultValue = "14") int loanDays,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-          LocalDate loanDate,
-      Model model,
-      RedirectAttributes redirectAttributes) {
+    @RequestParam UUID bookId,
+    @RequestParam UUID pickupLocationId,
+    @RequestParam(defaultValue = "14") int loanDays,
+    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    LocalDate loanDate,
+    Model model,
+    RedirectAttributes redirectAttributes) {
 
     try {
+      // Get current user, handle null case
       LibraryUser currentUser = userService.getCurrentUser();
+      if (currentUser == null) {
+        LOG.error("Failed to get current user when creating loan");
+        redirectAttributes.addFlashAttribute("errorMessage",
+          "Authentication error. Please log out and try again.");
+        return "redirect:/books/" + bookId;
+      }
+
+      LOG.info("Creating loan for user {} (ID: {})",
+        currentUser.getFullName(), currentUser.getId());
+
       Book book = bookService.getBookById(bookId);
       LibraryLocation location = locationService.getLocationById(pickupLocationId);
 
@@ -158,41 +172,46 @@ public class BookLoanController {
       ZonedDateTime loanStartDateTime = loanStartDate.atStartOfDay(ZonedDateTime.now().getZone());
       ZonedDateTime dueDateTime = loanStartDateTime.plusDays(loanDays);
 
-      BookLoan loan =
-          loanService.createLoan(book, currentUser, location, loanStartDateTime, dueDateTime);
+      BookLoan loan = loanService.createLoan(book, currentUser, location, loanStartDateTime, dueDateTime);
 
       redirectAttributes.addFlashAttribute(
-          "successMessage",
-          "Book '"
-              + book.getTitle()
-              + "' has been successfully borrowed. Please return it by "
-              + dueDateTime.toLocalDate().toString()
-              + ".");
+        "successMessage",
+        "Book '" + book.getTitle() + "' has been successfully borrowed. Please return it by "
+          + dueDateTime.toLocalDate().toString() + ".");
 
       return "redirect:/loans/my-loans";
 
     } catch (BookNotAvailableException e) {
+      LOG.warn("Book not available: {}", e.getMessage());
       redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
       return "redirect:/books/" + bookId;
     } catch (Exception e) {
+      LOG.error("Error creating loan: ", e);
       redirectAttributes.addFlashAttribute("errorMessage", "An error occurred: " + e.getMessage());
       return "redirect:/books/" + bookId;
     }
   }
 
-  /** Process loan request with HTMX */
-  @PostMapping(value = "/create/htmx", produces = MediaType.TEXT_HTML_VALUE)
+  // HTMX version follows the same pattern
+  @PostMapping("/create/htmx")
   @PreAuthorize("isAuthenticated()")
   public String createLoanHtmx(
-      @RequestParam UUID bookId,
-      @RequestParam UUID pickupLocationId,
-      @RequestParam(defaultValue = "14") int loanDays,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-          LocalDate loanDate,
-      Model model) {
+    @RequestParam UUID bookId,
+    @RequestParam UUID pickupLocationId,
+    @RequestParam(defaultValue = "14") int loanDays,
+    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    LocalDate loanDate,
+    Model model) {
 
     try {
+      // Get current user, handle null case
       LibraryUser currentUser = userService.getCurrentUser();
+      if (currentUser == null) {
+        LOG.error("Failed to get current user when creating loan via HTMX");
+        model.addAttribute("error", "Authentication error. Please log out and try again.");
+        return "loans/fragments :: loan-error";
+      }
+
       Book book = bookService.getBookById(bookId);
       LibraryLocation location = locationService.getLocationById(pickupLocationId);
 
@@ -203,8 +222,7 @@ public class BookLoanController {
       ZonedDateTime loanStartDateTime = loanStartDate.atStartOfDay(ZonedDateTime.now().getZone());
       ZonedDateTime dueDateTime = loanStartDateTime.plusDays(loanDays);
 
-      BookLoan loan =
-          loanService.createLoan(book, currentUser, location, loanStartDateTime, dueDateTime);
+      BookLoan loan = loanService.createLoan(book, currentUser, location, loanStartDateTime, dueDateTime);
 
       model.addAttribute("loan", loan);
       return "loans/fragments :: loan-success";
@@ -213,11 +231,11 @@ public class BookLoanController {
       model.addAttribute("error", e.getMessage());
       return "loans/fragments :: loan-error";
     } catch (Exception e) {
+      LOG.error("Error creating loan via HTMX: ", e);
       model.addAttribute("error", "An error occurred: " + e.getMessage());
       return "loans/fragments :: loan-error";
     }
   }
-
   /** Return a book */
   @PostMapping("/{id}/return")
   @PreAuthorize("hasRole('ROLE_ADMIN')")

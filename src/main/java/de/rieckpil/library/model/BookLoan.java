@@ -27,16 +27,16 @@ public class BookLoan {
   private UUID id;
 
   @NotNull
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "book_id", nullable = false)
   private Book book;
 
   @NotNull
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "user_id", nullable = false)
   private LibraryUser user;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "pickup_location_id")
   private LibraryLocation pickupLocation;
 
@@ -65,8 +65,8 @@ public class BookLoan {
 
   public boolean isOverdue() {
     return returnDate == null
-        && ZonedDateTime.now().isAfter(dueDate)
-        && status != LoanStatus.RETURNED;
+      && ZonedDateTime.now().isAfter(dueDate)
+      && status != LoanStatus.RETURNED;
   }
 
   public UUID getId() {

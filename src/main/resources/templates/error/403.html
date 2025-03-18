@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layouts/main :: layout(~{::title}, ~{::main})}">
+<head>
+  <title>Access Denied | MockShelf</title>
+</head>
+<body>
+<main>
+  <div class="container mx-auto px-4 py-8">
+    <div class="bg-white shadow-md rounded-lg p-8 text-center">
+      <div class="text-yellow-500 mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+      </div>
+
+      <h1 class="text-2xl font-bold text-gray-800 mb-4">403 - Access Denied</h1>
+
+      <p class="text-gray-600 mb-6">
+        You don't have permission to access this page.
+      </p>
+
+      <div class="mt-6 space-x-4">
+        <a href="/" class="btn-primary">Return to Home</a>
+        <a href="/login" class="btn-secondary">Login</a>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>
