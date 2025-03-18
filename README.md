@@ -8,6 +8,13 @@
 pre-commit install
 ```
 
+## Keycloak
+
+Export realm:
+
+```
+```
+
 ## MockShelf Architecture Documentation
 
 ## Overview
