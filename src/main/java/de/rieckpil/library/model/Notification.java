@@ -38,7 +38,7 @@ public class Notification {
   @Column(columnDefinition = "TEXT", nullable = false)
   private String content;
 
-  @Column(nullable = true)
+  @Column(columnDefinition = "TEXT")
   private String errorMessage;
 
   @CreationTimestamp
