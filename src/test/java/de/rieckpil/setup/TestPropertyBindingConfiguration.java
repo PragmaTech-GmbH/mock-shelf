@@ -12,40 +12,40 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.web.reactive.function.client.WebClient;
 
-//@Configuration
+@Configuration
 public class TestPropertyBindingConfiguration {
 
   /**
    * Configures mail sender based on MailDev connection details.
    */
-  @Bean
-  @Primary
-  public JavaMailSender mailSender(MailDevConnectionDetails mailDevDetails) {
-    JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-    mailSender.setHost(mailDevDetails.getHost());
-    mailSender.setPort(mailDevDetails.getSmtpPort());
-    mailSender.setUsername(mailDevDetails.getUsername());
-    mailSender.setPassword(mailDevDetails.getPassword());
-
-    Properties props = mailSender.getJavaMailProperties();
-    props.put("mail.transport.protocol", "smtp");
-    props.put("mail.smtp.auth", "true");
-    props.put("mail.smtp.starttls.enable", "false");
-    props.put("mail.debug", "true");
-
-    return mailSender;
-  }
+//  @Bean
+//  @Primary
+//  public JavaMailSender mailSender(MailDevConnectionDetails mailDevDetails) {
+//    JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+//    mailSender.setHost(mailDevDetails.getHost());
+//    mailSender.setPort(mailDevDetails.getSmtpPort());
+//    mailSender.setUsername(mailDevDetails.getUsername());
+//    mailSender.setPassword(mailDevDetails.getPassword());
+//
+//    Properties props = mailSender.getJavaMailProperties();
+//    props.put("mail.transport.protocol", "smtp");
+//    props.put("mail.smtp.auth", "true");
+//    props.put("mail.smtp.starttls.enable", "false");
+//    props.put("mail.debug", "true");
+//
+//    return mailSender;
+//  }
 
   /**
    * Creates a WebClient for WireMock.
    */
-  @Bean
-  @Primary
-  public WebClient isbnApiWebClient(WireMockConnectionDetails wireMockDetails) {
-    return WebClient.builder()
-      .baseUrl(wireMockDetails.getBaseUrl())
-      .build();
-  }
+//  @Bean
+//  @Primary
+//  public WebClient isbnApiWebClient(WireMockConnectionDetails wireMockDetails) {
+//    return WebClient.builder()
+//      .baseUrl(wireMockDetails.getBaseUrl())
+//      .build();
+//  }
 
   /**
    * Configures JWT decoder from Keycloak.

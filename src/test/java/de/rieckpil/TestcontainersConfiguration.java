@@ -1,5 +1,7 @@
 package de.rieckpil;
 
+import de.rieckpil.setup.KeycloakConnectionDetails;
+import de.rieckpil.setup.KeycloakContainer;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
@@ -24,24 +26,16 @@ class TestcontainersConfiguration {
   @ServiceConnection
   PostgreSQLContainer<?> postgresContainer() {
     return new PostgreSQLContainer<>(DockerImageName.parse("postgres:15"))
-        .withDatabaseName("mock-shelf")
-        .withUsername("postgres")
-        .withPassword("postgres");
+      .withDatabaseName("mock-shelf")
+      .withUsername("postgres")
+      .withPassword("postgres");
   }
 
-  //  @Bean
-  ////  @ServiceConnection
-  //  GenericContainer<?> keycloakContainer() {
-  //    return new GenericContainer<>(DockerImageName.parse("quay.io/keycloak/keycloak:22.0"))
-  //        .withExposedPorts(8080)
-  //        .withEnv("KEYCLOAK_ADMIN", "admin")
-  //        .withEnv("KEYCLOAK_ADMIN_PASSWORD", "admin")
-  //        .withEnv("KC_HEALTH_ENABLED", "true")
-  //        .withCommand("start-dev", "--import-realm")
-  //        .withFileSystemBind(
-  //            "./docker/keycloak/mockshelf-realm.json",
-  //            "/opt/keycloak/data/import/mockshelf-realm.json");
-  //  }
+  @Bean
+  @ServiceConnection
+  KeycloakContainer keycloakContainer() {
+    return new KeycloakContainer();
+  }
 
   //  @Bean
   ////  @ServiceConnection

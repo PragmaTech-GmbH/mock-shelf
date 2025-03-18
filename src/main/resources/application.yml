@@ -13,6 +13,16 @@ spring:
 
   security:
     oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: your-client-id
+            client-secret: your-client-secret
+            scope: openid,profile,email
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8888/realms/spring
+            user-name-attribute: preferred_username
       resourceserver:
         jwt:
           issuer-uri: http://localhost:8888/auth/realms/spring

@@ -4,17 +4,11 @@ import org.springframework.boot.autoconfigure.service.connection.ConnectionDetai
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 
 public interface KeycloakConnectionDetails extends ConnectionDetails {
-  /**
-   * Gets the issuer URI for Keycloak.
-   *
-   * @return the issuer URI
-   */
+  String getAuthServerUrl();
+  String getRealm();
+  String getClientId();
+  String getClientSecret();
   String getIssuerUri();
-
-  /**
-   * Gets a configured JWT decoder for validation.
-   *
-   * @return the JWT decoder
-   */
+  String getJwkSetUri();
   JwtDecoder getJwtDecoder();
 }
