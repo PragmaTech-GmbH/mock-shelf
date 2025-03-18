@@ -19,8 +19,19 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
   /** Find notifications by type (EMAIL, SMS, etc.) */
   List<Notification> findByType(Notification.NotificationType type);
 
+  /** Find notifications by type (EMAIL, SMS, etc.) */
+  List<Notification> findByType(Notification.NotificationType type, Pageable pageable);
+
   /** Find notifications by status (QUEUED, SENT, FAILED) */
   List<Notification> findByStatus(Notification.NotificationStatus status);
+
+
+  /** Find notifications by status (QUEUED, SENT, FAILED) */
+  List<Notification> findByStatusAndType(Notification.NotificationStatus status, Notification.NotificationType type, Pageable pageable);
+
+
+  /** Find notifications by status (QUEUED, SENT, FAILED) */
+  List<Notification> findByStatus(Notification.NotificationStatus status, Pageable pageable);
 
   /** Find all notifications for a specific user */
   @Query("SELECT n FROM Notification n WHERE n.loan.user.id = :userId")

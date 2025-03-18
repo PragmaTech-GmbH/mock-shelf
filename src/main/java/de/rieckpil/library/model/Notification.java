@@ -38,6 +38,9 @@ public class Notification {
   @Column(columnDefinition = "TEXT", nullable = false)
   private String content;
 
+  @Column(nullable = true)
+  private String errorMessage;
+
   @CreationTimestamp
   @Column(nullable = false)
   private ZonedDateTime sentAt;
@@ -54,5 +57,69 @@ public class Notification {
     QUEUED,
     SENT,
     FAILED
+  }
+
+  public UUID getId() {
+    return id;
+  }
+
+  public String getErrorMessage() {
+    return errorMessage;
+  }
+
+  public  void setErrorMessage(String errorMessage) {
+    this.errorMessage = errorMessage;
+  }
+
+  public void setId(UUID id) {
+    this.id = id;
+  }
+
+  public BookLoan getLoan() {
+    return loan;
+  }
+
+  public void setLoan(BookLoan loan) {
+    this.loan = loan;
+  }
+
+  public NotificationType getType() {
+    return type;
+  }
+
+  public void setType(NotificationType type) {
+    this.type = type;
+  }
+
+  public String getSubject() {
+    return subject;
+  }
+
+  public void setSubject(String subject) {
+    this.subject = subject;
+  }
+
+  public String getContent() {
+    return content;
+  }
+
+  public void setContent(String content) {
+    this.content = content;
+  }
+
+  public ZonedDateTime getSentAt() {
+    return sentAt;
+  }
+
+  public void setSentAt(ZonedDateTime sentAt) {
+    this.sentAt = sentAt;
+  }
+
+  public NotificationStatus getStatus() {
+    return status;
+  }
+
+  public void setStatus(NotificationStatus status) {
+    this.status = status;
   }
 }
