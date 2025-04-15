@@ -44,10 +44,10 @@ public class AccountController {
 
   @PostMapping("/profile")
   public String updateProfile(
-    @Valid @ModelAttribute("profileForm") ProfileForm profileForm,
-    BindingResult result,
-    Model model,
-    RedirectAttributes redirectAttributes) {
+      @Valid @ModelAttribute("profileForm") ProfileForm profileForm,
+      BindingResult result,
+      Model model,
+      RedirectAttributes redirectAttributes) {
 
     LibraryUser user = userService.getCurrentUser();
 
@@ -99,8 +99,7 @@ public class AccountController {
     private String address;
 
     // Default constructor needed for form binding
-    public ProfileForm() {
-    }
+    public ProfileForm() {}
 
     // Constructor to initialize from a LibraryUser
     public ProfileForm(LibraryUser user) {

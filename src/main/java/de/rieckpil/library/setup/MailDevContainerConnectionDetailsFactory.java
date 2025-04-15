@@ -5,10 +5,11 @@ import org.springframework.boot.testcontainers.service.connection.ContainerConne
 import org.springframework.boot.testcontainers.service.connection.ContainerConnectionSource;
 
 public class MailDevContainerConnectionDetailsFactory
-  extends ContainerConnectionDetailsFactory<MailDevContainer, MailDevConnectionDetails> {
+    extends ContainerConnectionDetailsFactory<MailDevContainer, MailDevConnectionDetails> {
 
   @Override
-  protected MailDevConnectionDetails getContainerConnectionDetails(ContainerConnectionSource<MailDevContainer> source) {
+  protected MailDevConnectionDetails getContainerConnectionDetails(
+      ContainerConnectionSource<MailDevContainer> source) {
     MailDevContainer container = null;
     MailProperties properties = new MailProperties();
 

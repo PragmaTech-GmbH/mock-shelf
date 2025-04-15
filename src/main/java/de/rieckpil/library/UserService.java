@@ -16,7 +16,9 @@ public class UserService {
   private final KeycloakUserSyncService keycloakUserSyncService;
   private final LibraryUserRepository libraryUserRepository;
 
-  public UserService(KeycloakUserSyncService keycloakUserSyncService, LibraryUserRepository libraryUserRepository) {
+  public UserService(
+      KeycloakUserSyncService keycloakUserSyncService,
+      LibraryUserRepository libraryUserRepository) {
     this.keycloakUserSyncService = keycloakUserSyncService;
     this.libraryUserRepository = libraryUserRepository;
   }
@@ -51,8 +53,9 @@ public class UserService {
 
   public LibraryUser getCurrentUser() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (authentication == null || !authentication.isAuthenticated() ||
-      authentication instanceof AnonymousAuthenticationToken) {
+    if (authentication == null
+        || !authentication.isAuthenticated()
+        || authentication instanceof AnonymousAuthenticationToken) {
       return null;
     }
 

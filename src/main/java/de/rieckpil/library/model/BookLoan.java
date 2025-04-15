@@ -65,8 +65,8 @@ public class BookLoan {
 
   public boolean isOverdue() {
     return returnDate == null
-      && ZonedDateTime.now().isAfter(dueDate)
-      && status != LoanStatus.RETURNED;
+        && ZonedDateTime.now().isAfter(dueDate)
+        && status != LoanStatus.RETURNED;
   }
 
   public UUID getId() {

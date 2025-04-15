@@ -2,7 +2,6 @@ package de.rieckpil.library;
 
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import de.rieckpil.library.model.Book;
@@ -71,11 +70,11 @@ public class BookLoanService {
 
   @Transactional
   public BookLoan createLoan(
-    Book book,
-    LibraryUser currentUser,
-    LibraryLocation location,
-    ZonedDateTime loanDate,
-    ZonedDateTime dueDate) {
+      Book book,
+      LibraryUser currentUser,
+      LibraryLocation location,
+      ZonedDateTime loanDate,
+      ZonedDateTime dueDate) {
 
     // Validate all inputs
     if (book == null) {
@@ -88,8 +87,12 @@ public class BookLoanService {
       throw new IllegalArgumentException("Location cannot be null");
     }
 
-    LOG.info("Creating loan for book '{}' (ID: {}) for user {} (ID: {})",
-      book.getTitle(), book.getId(), currentUser.getFullName(), currentUser.getId());
+    LOG.info(
+        "Creating loan for book '{}' (ID: {}) for user {} (ID: {})",
+        book.getTitle(),
+        book.getId(),
+        currentUser.getFullName(),
+        currentUser.getId());
 
     // Check if the book is available
     if (!book.getAvailable()) {

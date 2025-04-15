@@ -23,33 +23,33 @@ public class WebSecurityConfiguration {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.authorizeHttpRequests(
-        authorizeRequests ->
-          authorizeRequests
-            .requestMatchers(
-              "/", "/books", "/webjars/**", "/css/**", "/js/**", "/images/**")
-            .permitAll()
-            .requestMatchers("/admin/**")
-            .hasRole("ADMIN")
-            .requestMatchers("/loans/my-loans")
-            .authenticated()
-            .anyRequest()
-            .authenticated())
-      .oauth2Login(
-        oauth2 ->
-          oauth2
-            .defaultSuccessUrl("/", true)
-            .failureUrl("/login?error=true")
-            .loginPage("/login"))
-      .logout(
-        logout ->
-          logout
-            .logoutSuccessUrl("/")
-            .invalidateHttpSession(true)
-            .clearAuthentication(true)
-            .deleteCookies("JSESSIONID"))
-      .oauth2ResourceServer(
-        oauth2 ->
-          oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
+            authorizeRequests ->
+                authorizeRequests
+                    .requestMatchers(
+                        "/", "/books", "/webjars/**", "/css/**", "/js/**", "/images/**")
+                    .permitAll()
+                    .requestMatchers("/admin/**")
+                    .hasRole("ADMIN")
+                    .requestMatchers("/loans/my-loans")
+                    .authenticated()
+                    .anyRequest()
+                    .authenticated())
+        .oauth2Login(
+            oauth2 ->
+                oauth2
+                    .defaultSuccessUrl("/", true)
+                    .failureUrl("/login?error=true")
+                    .loginPage("/login"))
+        .logout(
+            logout ->
+                logout
+                    .logoutSuccessUrl("/")
+                    .invalidateHttpSession(true)
+                    .clearAuthentication(true)
+                    .deleteCookies("JSESSIONID"))
+        .oauth2ResourceServer(
+            oauth2 ->
+                oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
 
     return http.build();
   }
@@ -64,17 +64,17 @@ public class WebSecurityConfiguration {
     @Override
     public Collection<GrantedAuthority> convert(Jwt jwt) {
       final Map<String, Object> realmAccess =
-        (Map<String, Object>) jwt.getClaims().get("realm_access");
+          (Map<String, Object>) jwt.getClaims().get("realm_access");
 
       if (realmAccess == null || realmAccess.isEmpty()) {
         return List.of();
       }
 
       return ((List<String>) realmAccess.get("roles"))
-        .stream()
-        .map(roleName -> "ROLE_" + roleName.toUpperCase())
-        .map(SimpleGrantedAuthority::new)
-        .collect(Collectors.toList());
+          .stream()
+              .map(roleName -> "ROLE_" + roleName.toUpperCase())
+              .map(SimpleGrantedAuthority::new)
+              .collect(Collectors.toList());
     }
   }
 }

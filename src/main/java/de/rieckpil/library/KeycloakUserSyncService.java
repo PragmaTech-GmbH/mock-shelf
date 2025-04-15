@@ -36,8 +36,8 @@ public class KeycloakUserSyncService {
     Optional<LibraryUser> existingUser = libraryUserRepository.findByKeycloakId(keycloakId);
 
     return existingUser
-      .map(libraryUser -> updateExistingUser(libraryUser, attributes))
-      .orElseGet(() -> createNewUser(keycloakId, attributes));
+        .map(libraryUser -> updateExistingUser(libraryUser, attributes))
+        .orElseGet(() -> createNewUser(keycloakId, attributes));
   }
 
   private LibraryUser updateExistingUser(LibraryUser user, Map<String, Object> attributes) {
@@ -58,9 +58,9 @@ public class KeycloakUserSyncService {
     user.setEmail(getAttributeAsString(attributes, "email"));
 
     // Check for admin role in the authorities
-    boolean isAdmin = SecurityContextHolder.getContext().getAuthentication()
-      .getAuthorities().stream()
-      .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+    boolean isAdmin =
+        SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
     user.setAdmin(isAdmin);
   }
 

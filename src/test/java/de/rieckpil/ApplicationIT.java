@@ -12,8 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @SpringBootTest
 class ApplicationIT {
 
-  @Autowired
-  private KeycloakConnectionDetails connectionDetails;
+  @Autowired private KeycloakConnectionDetails connectionDetails;
 
   @Test
   void contextLoads() {

@@ -67,7 +67,7 @@ public class Notification {
     return errorMessage;
   }
 
-  public  void setErrorMessage(String errorMessage) {
+  public void setErrorMessage(String errorMessage) {
     this.errorMessage = errorMessage;
   }
 

@@ -1,12 +1,5 @@
 package de.rieckpil;
 
-import org.junit.jupiter.api.extension.BeforeAllCallback;
-import org.junit.jupiter.api.extension.BeforeEachCallback;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.GenericContainer;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -14,11 +7,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.GenericContainer;
+
 /**
  * JUnit Jupiter extension that automatically applies withReuse(true) to all Testcontainers
  * containers in the test class using reflection.
  *
- * Usage: @ExtendWith(ContainerReuseExtension.class)
+ * <p>Usage: @ExtendWith(ContainerReuseExtension.class)
  */
 public class ContainerReuseExtension implements BeforeAllCallback, BeforeEachCallback {
 
@@ -27,17 +27,23 @@ public class ContainerReuseExtension implements BeforeAllCallback, BeforeEachCal
   @Override
   public void beforeAll(ExtensionContext context) {
     // Handle static container fields
-    context.getTestClass().ifPresent(testClass -> {
-      applyReuseToStaticContainerFields(testClass);
-    });
+    context
+        .getTestClass()
+        .ifPresent(
+            testClass -> {
+              applyReuseToStaticContainerFields(testClass);
+            });
   }
 
   @Override
   public void beforeEach(ExtensionContext context) {
     // Handle instance container fields
-    context.getTestInstance().ifPresent(testInstance -> {
-      applyReuseToInstanceContainerFields(testInstance);
-    });
+    context
+        .getTestInstance()
+        .ifPresent(
+            testInstance -> {
+              applyReuseToInstanceContainerFields(testInstance);
+            });
   }
 
   private void applyReuseToStaticContainerFields(Class<?> testClass) {
@@ -133,7 +139,8 @@ public class ContainerReuseExtension implements BeforeAllCallback, BeforeEachCal
     return fields;
   }
 
-  private <T extends GenericContainer<?>> void applyReuseToContainer(T container, String fieldName) {
+  private <T extends GenericContainer<?>> void applyReuseToContainer(
+      T container, String fieldName) {
     try {
       // Get the withReuse method
       Method withReuseMethod = GenericContainer.class.getMethod("withReuse", boolean.class);

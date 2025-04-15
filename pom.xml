@@ -24,6 +24,17 @@
     <tailwindcss.version>4.0.6</tailwindcss.version>
   </properties>
 
+  <dependencyManagement>
+    <dependencies>
+      <!-- spring-security-oauth2-client vs. jobrunr -->
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm</artifactId>
+        <version>9.7.1</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

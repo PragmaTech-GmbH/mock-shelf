@@ -19,33 +19,35 @@ class TestcontainersConfiguration {
   @Bean
   ArtemisContainer artemisContainer() {
     return new ArtemisContainer(parse("apache/activemq-artemis:2.40.0"))
-      .withExposedPorts(61616, 8161)
-      .withPassword("activemq")
-      .withUser("activemq");
+        .withExposedPorts(61616, 8161)
+        .withPassword("activemq")
+        .withUser("activemq");
   }
 
   @Bean
   @ServiceConnection
   PostgreSQLContainer<?> postgresContainer() {
     return new PostgreSQLContainer<>(parse("postgres:15"))
-      .withDatabaseName("mock-shelf")
-      .withUsername("postgres")
-      .withPassword("postgres");
+        .withDatabaseName("mock-shelf")
+        .withUsername("postgres")
+        .withPassword("postgres");
   }
 
   @Bean
   @ServiceConnection
   KeycloakContainer keycloakContainer() {
     return new KeycloakContainer()
-      .withRealm("spring")
-      .withRealmImport(MountableFile.forClasspathResource("/docker/keycloak/spring-realm.json"));
+        .withRealm("spring")
+        .withRealmImport(MountableFile.forClasspathResource("/docker/keycloak/spring-realm.json"));
   }
 
   @Bean
   public DynamicPropertyRegistrar keycloakProperties(KeycloakContainer container) {
     return (properties) -> {
-      properties.add("spring.security.oauth2.client.provider.keycloak.issuer-uri", container::getIssuerUrl);
-      properties.add("spring.security.oauth2.resourceserver.jwt.issuer-uri", container::getIssuerUrl);
+      properties.add(
+          "spring.security.oauth2.client.provider.keycloak.issuer-uri", container::getIssuerUrl);
+      properties.add(
+          "spring.security.oauth2.resourceserver.jwt.issuer-uri", container::getIssuerUrl);
     };
   }
 

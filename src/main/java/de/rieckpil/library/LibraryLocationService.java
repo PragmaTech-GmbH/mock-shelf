@@ -9,9 +9,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Service for library location management.
- */
+/** Service for library location management. */
 @Service
 public class LibraryLocationService {
 
@@ -39,8 +37,8 @@ public class LibraryLocationService {
    */
   public LibraryLocation getLocationById(UUID id) {
     return locationRepository
-      .findById(id)
-      .orElseThrow(() -> new IllegalArgumentException("Location not found: " + id));
+        .findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("Location not found: " + id));
   }
 
   /**
@@ -96,7 +94,6 @@ public class LibraryLocationService {
    * @return page of locations
    */
   public List<LibraryLocation> getPagedLocations(int page, int size) {
-    return locationRepository.findAll(
-      PageRequest.of(page, size, Sort.by("name"))).getContent();
+    return locationRepository.findAll(PageRequest.of(page, size, Sort.by("name"))).getContent();
   }
 }

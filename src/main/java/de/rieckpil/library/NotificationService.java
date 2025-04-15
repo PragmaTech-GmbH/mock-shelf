@@ -39,12 +39,12 @@ public class NotificationService {
   private final JobScheduler jobScheduler;
 
   public NotificationService(
-    NotificationRepository notificationRepository,
-    BookLoanRepository bookLoanRepository,
-    JavaMailSender mailSender,
-    TemplateEngine templateEngine,
-    ApplicationProperties applicationProperties,
-    JobScheduler jobScheduler) {
+      NotificationRepository notificationRepository,
+      BookLoanRepository bookLoanRepository,
+      JavaMailSender mailSender,
+      TemplateEngine templateEngine,
+      ApplicationProperties applicationProperties,
+      JobScheduler jobScheduler) {
     this.notificationRepository = notificationRepository;
     this.bookLoanRepository = bookLoanRepository;
     this.mailSender = mailSender;
@@ -58,39 +58,36 @@ public class NotificationService {
 
     if (status != null && !status.isEmpty() && type != null && !type.isEmpty()) {
       return notificationRepository.findByStatusAndType(
-        NotificationStatus.valueOf(status.toUpperCase()),
-        NotificationType.valueOf(type.toUpperCase()),
-        pageRequest);
-    }
-    else if (status != null && !status.isEmpty()) {
+          NotificationStatus.valueOf(status.toUpperCase()),
+          NotificationType.valueOf(type.toUpperCase()),
+          pageRequest);
+    } else if (status != null && !status.isEmpty()) {
       return notificationRepository.findByStatus(
-        NotificationStatus.valueOf(status.toUpperCase()), pageRequest);
-    }
-    else if (type != null && !type.isEmpty()) {
+          NotificationStatus.valueOf(status.toUpperCase()), pageRequest);
+    } else if (type != null && !type.isEmpty()) {
       return notificationRepository.findByType(
-        NotificationType.valueOf(type.toUpperCase()), pageRequest);
-    }
-    else {
+          NotificationType.valueOf(type.toUpperCase()), pageRequest);
+    } else {
       return getAllNotifications(page, size);
     }
   }
 
   public List<Notification> getAllNotifications(int page, int size) {
     return notificationRepository
-      .findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "sentAt")))
-      .getContent();
+        .findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "sentAt")))
+        .getContent();
   }
 
   @Transactional
   public Notification resendNotification(UUID id) {
     Notification notification =
-      notificationRepository
-        .findById(id)
-        .orElseThrow(() -> new IllegalArgumentException("Notification not found: " + id));
+        notificationRepository
+            .findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Notification not found: " + id));
 
     if (notification.getStatus() != NotificationStatus.FAILED) {
       throw new IllegalStateException(
-        "Only failed notifications can be resent. Current status: " + notification.getStatus());
+          "Only failed notifications can be resent. Current status: " + notification.getStatus());
     }
 
     // Update notification for resending
@@ -117,23 +114,21 @@ public class NotificationService {
     Notification notification = notificationOpt.get();
     if (notification.getStatus() != NotificationStatus.QUEUED) {
       LOG.info(
-        "Notification {} is not in QUEUED status, current status: {}",
-        notificationId,
-        notification.getStatus());
+          "Notification {} is not in QUEUED status, current status: {}",
+          notificationId,
+          notification.getStatus());
       return;
     }
 
     try {
       if (notification.getType() == NotificationType.EMAIL) {
         sendEmailNotification(notification);
-      }
-      else {
+      } else {
         LOG.warn("Unsupported notification type: {}", notification.getType());
         notification.setStatus(NotificationStatus.FAILED);
         notificationRepository.save(notification);
       }
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       LOG.error("Error sending notification {}: {}", notificationId, e.getMessage(), e);
       notification.setStatus(NotificationStatus.FAILED);
       notification.setErrorMessage(e.getMessage());
@@ -141,13 +136,13 @@ public class NotificationService {
     }
   }
 
-  private void sendEmailNotification(Notification notification) throws MessagingException, UnsupportedEncodingException {
+  private void sendEmailNotification(Notification notification)
+      throws MessagingException, UnsupportedEncodingException {
     MimeMessage message = mailSender.createMimeMessage();
     MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
     helper.setFrom(
-      applicationProperties.getEmail().getFrom(),
-      applicationProperties.getEmail().getName());
+        applicationProperties.getEmail().getFrom(), applicationProperties.getEmail().getName());
     helper.setTo(notification.getLoan().getUser().getEmail());
     helper.setSubject(notification.getSubject());
     helper.setText(notification.getContent(), true);
@@ -164,9 +159,9 @@ public class NotificationService {
     notificationRepository.save(notification);
 
     LOG.info(
-      "Email notification sent successfully to {} for loan {}",
-      notification.getLoan().getUser().getEmail(),
-      notification.getLoan().getId());
+        "Email notification sent successfully to {} for loan {}",
+        notification.getLoan().getUser().getEmail(),
+        notification.getLoan().getId());
   }
 
   @Transactional
@@ -177,16 +172,16 @@ public class NotificationService {
     ZonedDateTime reminderEnd = reminderStart.plusDays(1);
 
     List<BookLoan> loansNeedingReminders =
-      bookLoanRepository.findLoansNeedingReminders(reminderStart, reminderEnd);
+        bookLoanRepository.findLoansNeedingReminders(reminderStart, reminderEnd);
 
     LOG.info("Found {} loans needing due date reminders", loansNeedingReminders.size());
 
     for (BookLoan loan : loansNeedingReminders) {
       try {
         createAndSendDueDateReminder(loan);
-      }
-      catch (Exception e) {
-        LOG.error("Error sending due date reminder for loan {}: {}", loan.getId(), e.getMessage(), e);
+      } catch (Exception e) {
+        LOG.error(
+            "Error sending due date reminder for loan {}: {}", loan.getId(), e.getMessage(), e);
       }
     }
   }
@@ -202,10 +197,12 @@ public class NotificationService {
       if (!notificationRepository.hasNotificationBeenSent(loan, NotificationType.EMAIL)) {
         try {
           createAndSendOverdueNotification(loan);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
           LOG.error(
-            "Error sending overdue notification for loan {}: {}", loan.getId(), e.getMessage(), e);
+              "Error sending overdue notification for loan {}: {}",
+              loan.getId(),
+              e.getMessage(),
+              e);
         }
       }
     }
@@ -215,19 +212,17 @@ public class NotificationService {
   public void createAndSendDueDateReminder(BookLoan loan) {
     // Calculate days until due
     long daysUntilDue =
-      java.time.Duration.between(ZonedDateTime.now(), loan.getDueDate()).toDays() + 1;
+        java.time.Duration.between(ZonedDateTime.now(), loan.getDueDate()).toDays() + 1;
 
     // Create subject for email
     String subject =
-      String.format(
-        "Reminder: '%s' is due in %d days", loan.getBook().getTitle(), daysUntilDue);
+        String.format("Reminder: '%s' is due in %d days", loan.getBook().getTitle(), daysUntilDue);
 
     // Create context for email template
     Context context = new Context();
     context.setVariable("loan", loan);
     context.setVariable("daysUntilDue", daysUntilDue);
-    context.setVariable(
-      "accountUrl", applicationProperties.getApp().getUrl() + "/loans/my-loans");
+    context.setVariable("accountUrl", applicationProperties.getApp().getUrl() + "/loans/my-loans");
 
     // Process the template
     String emailContent = templateEngine.process("emails/due-date-reminder", context);
@@ -257,19 +252,17 @@ public class NotificationService {
     }
 
     // Calculate days overdue
-    long daysOverdue =
-      java.time.Duration.between(loan.getDueDate(), ZonedDateTime.now()).toDays();
+    long daysOverdue = java.time.Duration.between(loan.getDueDate(), ZonedDateTime.now()).toDays();
 
     // Create subject for email
     String subject =
-      String.format("OVERDUE: '%s' was due %d days ago", loan.getBook().getTitle(), daysOverdue);
+        String.format("OVERDUE: '%s' was due %d days ago", loan.getBook().getTitle(), daysOverdue);
 
     // Create context for email template
     Context context = new Context();
     context.setVariable("loan", loan);
     context.setVariable("daysOverdue", daysOverdue);
-    context.setVariable(
-      "accountUrl", applicationProperties.getApp().getUrl() + "/loans/my-loans");
+    context.setVariable("accountUrl", applicationProperties.getApp().getUrl() + "/loans/my-loans");
 
     // Process the template
     String emailContent = templateEngine.process("emails/overdue-notification", context);

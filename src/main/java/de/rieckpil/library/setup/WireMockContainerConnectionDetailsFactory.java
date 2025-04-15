@@ -4,12 +4,14 @@ import org.springframework.boot.testcontainers.service.connection.ContainerConne
 import org.springframework.boot.testcontainers.service.connection.ContainerConnectionSource;
 
 public class WireMockContainerConnectionDetailsFactory
-  extends ContainerConnectionDetailsFactory<WireMockContainer, WireMockConnectionDetails> {
+    extends ContainerConnectionDetailsFactory<WireMockContainer, WireMockConnectionDetails> {
 
   @Override
-  protected WireMockConnectionDetails getContainerConnectionDetails(ContainerConnectionSource<WireMockContainer> source) {
+  protected WireMockConnectionDetails getContainerConnectionDetails(
+      ContainerConnectionSource<WireMockContainer> source) {
     WireMockContainer container = null;
-    String baseUrl = String.format("http://%s:%d", container.getHost(), container.getMappedPort(8080));
+    String baseUrl =
+        String.format("http://%s:%d", container.getHost(), container.getMappedPort(8080));
 
     return new WireMockConnectionDetails() {
       @Override

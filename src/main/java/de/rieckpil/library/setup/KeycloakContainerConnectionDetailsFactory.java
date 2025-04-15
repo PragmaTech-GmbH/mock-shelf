@@ -5,29 +5,34 @@ import org.springframework.boot.testcontainers.service.connection.ContainerConne
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 
 public class KeycloakContainerConnectionDetailsFactory
-  extends ContainerConnectionDetailsFactory<KeycloakContainer, KeycloakConnectionDetails> {
+    extends ContainerConnectionDetailsFactory<KeycloakContainer, KeycloakConnectionDetails> {
 
   @Override
-  protected boolean sourceAccepts(ContainerConnectionSource<KeycloakContainer> source, Class<?> requiredContainerType, Class<?> requiredConnectionDetailsType) {
+  protected boolean sourceAccepts(
+      ContainerConnectionSource<KeycloakContainer> source,
+      Class<?> requiredContainerType,
+      Class<?> requiredConnectionDetailsType) {
     return requiredConnectionDetailsType.isAssignableFrom(KeycloakConnectionDetails.class);
   }
 
   @Override
-  protected KeycloakConnectionDetails getContainerConnectionDetails(ContainerConnectionSource<KeycloakContainer> source) {
+  protected KeycloakConnectionDetails getContainerConnectionDetails(
+      ContainerConnectionSource<KeycloakContainer> source) {
     return new KeycloakContainerContainerConnectionDetails(source);
   }
 
-  private static final class KeycloakContainerContainerConnectionDetails extends ContainerConnectionDetails<KeycloakContainer>
-    implements KeycloakConnectionDetails {
+  private static final class KeycloakContainerContainerConnectionDetails
+      extends ContainerConnectionDetails<KeycloakContainer> implements KeycloakConnectionDetails {
 
-    private KeycloakContainerContainerConnectionDetails(ContainerConnectionSource<KeycloakContainer> source) {
+    private KeycloakContainerContainerConnectionDetails(
+        ContainerConnectionSource<KeycloakContainer> source) {
       super(source);
     }
 
     @Override
     public String getAuthServerUrl() {
-      return String.format("http://%s:%d", getContainer().getHost(),
-        getContainer().getMappedPort(8080));
+      return String.format(
+          "http://%s:%d", getContainer().getHost(), getContainer().getMappedPort(8080));
     }
 
     @Override
