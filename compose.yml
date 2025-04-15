@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     volumes:
-      - ./docker/postgres:/docker-entrypoint-initdb.d
+      - ./src/test/resources/docker/postgres:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -35,8 +35,8 @@ services:
     image: quay.io/keycloak/keycloak:26.1
     container_name: mock-shelf-keycloak
     environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
       KC_DB: dev-file
       KC_HEALTH_ENABLED: "true"
     ports:
@@ -45,7 +45,7 @@ services:
       - start-dev
       - --import-realm
     volumes:
-      - ./docker/keycloak/spring-realm.json:/opt/keycloak/data/import/spring-realm.json
+      - ./src/test/resources/docker/keycloak/spring-realm.json:/opt/keycloak/data/import/spring-realm.json
     depends_on:
       postgres:
         condition: service_healthy
