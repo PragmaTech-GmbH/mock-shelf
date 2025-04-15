@@ -15,14 +15,14 @@ import static org.testcontainers.utility.DockerImageName.parse;
 @TestConfiguration(proxyBeanMethods = false)
 class TestcontainersConfiguration {
 
-//  @Bean
-//  @ServiceConnection
-//  ArtemisContainer artemisContainer() {
-//    return new ArtemisContainer(parse("rmohr/activemq:5.15.9").asCompatibleSubstituteFor("apache/activemq-artemis"))
-//      .withExposedPorts(61616, 8161)
-//      .withPassword("activemq")
-//      .withUser("activemq");
-//  }
+  @Bean
+  ArtemisContainer artemisContainer() {
+    return new ArtemisContainer(parse("rmohr/activemq:5.15.9")
+      .asCompatibleSubstituteFor("apache/activemq-artemis"))
+      .withExposedPorts(61616, 8161)
+      .withPassword("activemq")
+      .withUser("activemq");
+  }
 
   @Bean
   @ServiceConnection
@@ -33,19 +33,20 @@ class TestcontainersConfiguration {
       .withPassword("postgres");
   }
 
-//  @Bean
-//  @ServiceConnection
-//  KeycloakContainer keycloakContainer() {
-//    return new KeycloakContainer();
-//  }
+  @Bean
+  // @ServiceConnection
+  KeycloakContainer keycloakContainer() {
+    return new KeycloakContainer()
+      .withRealmImport("/docker/keycloak/spring-realm.json");
+  }
 
-//  @Bean
-//  public DynamicPropertyRegistrar keycloakProperties(KeycloakContainer container) {
-//    return (properties) -> {
-//      properties.add("spring.security.oauth2.client.provider.keycloak.issuer-uri", container::getIssuerUrl);
-//      properties.add("spring.security.oauth2.resourceserver.jwt.issuer-uri", container::getIssuerUrl);
-//    };
-//  }
+  @Bean
+  public DynamicPropertyRegistrar keycloakProperties(KeycloakContainer container) {
+    return (properties) -> {
+      properties.add("spring.security.oauth2.client.provider.keycloak.issuer-uri", container::getIssuerUrl);
+      properties.add("spring.security.oauth2.resourceserver.jwt.issuer-uri", container::getIssuerUrl);
+    };
+  }
 
   @Bean
   @ServiceConnection

@@ -6,7 +6,6 @@ spring:
     username: ${JDBC_DATABASE_USERNAME:postgres}
     password: ${JDBC_DATABASE_PASSWORD:postgres}
   jpa:
-    show-sql: false
     open-in-view: false
     hibernate:
       ddl-auto: validate
@@ -16,16 +15,16 @@ spring:
       client:
         registration:
           keycloak:
-            client-id: mock-shelf
-            client-secret: sK5v1zhHV7EkP5YhCcrnBvUxBsmrnDCo
+            client-id: ${KEYCLOAK_CLIENT_ID:mock-shelf}
+            client-secret: ${KEYCLOAK_CLIENT_SECRET:sK5v1zhHV7EkP5YhCcrnBvUxBsmrnDCo}
             scope: openid,profile,email
         provider:
           keycloak:
-            issuer-uri: http://localhost:8888/realms/spring
+            issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8081/realms/spring}
             user-name-attribute: preferred_username
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8888/auth/realms/spring
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8081/auth/realms/spring}
 
   # Flyway configuration
   flyway:
@@ -42,24 +41,16 @@ spring:
 
   # ActiveMQ configuration
   activemq:
-    broker-url: ${ACTIVEMQ_BROKER_URL:vm://embedded?broker.persistent=false}
+    broker-url: ${ACTIVEMQ_BROKER_URL:tcp://localhost:61616}
     user: ${ACTIVEMQ_USER:admin}
     password: ${ACTIVEMQ_PASSWORD:admin}
-    packages:
-      trust-all: true
 
-    # Email configuration
+  # Email configuration
   mail:
-    host: ${MAIL_HOST:smtp.mailtrap.io}
-    port: ${MAIL_PORT:2525}
-    username: ${MAIL_USERNAME:username}
-    password: ${MAIL_PASSWORD:password}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:maildev}
+    password: ${MAIL_PASSWORD:maildev}
 
 
 # MockShelf application settings
@@ -77,7 +68,6 @@ mock-shelf:
     reminder-days-before-due: 7
   app:
     url: ${APP_URL:http://localhost:8080}
-
 
 org:
   jobrunr:

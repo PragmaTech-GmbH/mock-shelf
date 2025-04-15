@@ -15,8 +15,8 @@ public class MailDevContainer extends GenericContainer<MailDevContainer> {
     super(DockerImageName.parse("maildev/maildev:2.0.5"));
 
     withExposedPorts(SMTP_PORT, WEB_PORT)
-      .withEnv("MAILDEV_INCOMING_USER", "user")
-      .withEnv("MAILDEV_INCOMING_PASS", "password")
+      .withEnv("MAILDEV_INCOMING_USER", "maildev")
+      .withEnv("MAILDEV_INCOMING_PASS", "maildev")
       .waitingFor(Wait.forHttp("/").forPort(WEB_PORT))
       .withStartupTimeout(Duration.ofSeconds(30));
   }

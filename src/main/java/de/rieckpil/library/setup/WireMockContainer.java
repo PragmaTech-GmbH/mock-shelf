@@ -21,14 +21,14 @@ public class WireMockContainer extends GenericContainer<WireMockContainer> {
 
   public WireMockContainer withMappings(String mappingsPath) {
     if (mappingsPath != null) {
-      withFileSystemBind(mappingsPath, "/home/wiremock/mappings");
+      withFileSystemBind(mappingsPath, "/mappings");
     }
     return this;
   }
 
   public WireMockContainer withFiles(String filesPath) {
     if (filesPath != null) {
-      withFileSystemBind(filesPath, "/home/wiremock/__files");
+      withFileSystemBind(filesPath, "/__files");
     }
     return this;
   }
