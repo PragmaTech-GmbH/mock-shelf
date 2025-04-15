@@ -24,7 +24,11 @@ jobs:
 
       - name: Verify local application startup
         run: |
-          docker compose up -d --wait
+          docker compose up -d
+
+          echo "Waiting 15 seconds for containers to initialize..."
+          sleep 15
+
           ./mvnw spring-boot:run &
           timeout 180 .github/workflows/health-check.sh 8080
 
