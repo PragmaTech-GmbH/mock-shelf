@@ -26,7 +26,13 @@ public class WebSecurityConfiguration {
             authorizeRequests ->
                 authorizeRequests
                     .requestMatchers(
-                        "/", "/books", "/webjars/**", "/css/**", "/js/**", "/images/**")
+                        "/",
+                        "/books",
+                        "/webjars/**",
+                        "/css/**",
+                        "/js/**",
+                        "/images/**",
+                        "/actuator/health")
                     .permitAll()
                     .requestMatchers("/admin/**")
                     .hasRole("ADMIN")
