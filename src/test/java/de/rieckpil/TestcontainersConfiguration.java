@@ -34,7 +34,7 @@ class TestcontainersConfiguration {
   }
 
   @Bean
-    // @ServiceConnection
+  @ServiceConnection
   KeycloakContainer keycloakContainer() {
     return new KeycloakContainer()
       .withRealm("spring")

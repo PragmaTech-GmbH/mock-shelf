@@ -5,14 +5,11 @@ import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
-
-  private static final Logger LOG = LoggerFactory.getLogger(KeycloakContainer.class);
 
   private static final int HTTP_PORT = 8080;
   private static final int MANAGEMENT_PORT = 9000;
@@ -27,7 +24,6 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
       .withEnv("KC_DB", "dev-file")
       .withEnv("KC_HEALTH_ENABLED", "true")
       .waitingFor(Wait.forHttp("/health/ready").forPort(MANAGEMENT_PORT))
-      .withLogConsumer(new Slf4jLogConsumer(LOG))
       .withStartupTimeout(Duration.ofMinutes(2));
   }
 
@@ -35,8 +31,6 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
     if (realmJsonPath != null) {
       withCommand("start-dev", "--import-realm")
         .withCopyFileToContainer(realmJsonPath, "/opt/keycloak/data/import/realm.json");
-
-      LOG.info("Using realm import file: {}", realmJsonPath);
     }
     return this;
   }
