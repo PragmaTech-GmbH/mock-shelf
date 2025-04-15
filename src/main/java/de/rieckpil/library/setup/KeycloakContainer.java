@@ -2,33 +2,41 @@ package de.rieckpil.library.setup;
 
 import java.time.Duration;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
 
+  private static final Logger LOG = LoggerFactory.getLogger(KeycloakContainer.class);
+
   private static final int HTTP_PORT = 8080;
   private static final int MANAGEMENT_PORT = 9000;
-  private String realm = "mock-shelf";
+  private String realm = "spring";
 
   public KeycloakContainer() {
     super(DockerImageName.parse("quay.io/keycloak/keycloak:26.1"));
 
     withExposedPorts(HTTP_PORT, MANAGEMENT_PORT)
-      .withEnv("KEYCLOAK_ADMIN", "admin")
-      .withEnv("KEYCLOAK_ADMIN_PASSWORD", "admin")
+      .withEnv("KC_BOOTSTRAP_ADMIN_USERNAME", "admin")
+      .withEnv("KC_BOOTSTRAP_ADMIN_PASSWORD", "admin")
       .withEnv("KC_DB", "dev-file")
       .withEnv("KC_HEALTH_ENABLED", "true")
-      .withCommand("start-dev")
       .waitingFor(Wait.forHttp("/health/ready").forPort(MANAGEMENT_PORT))
+      .withLogConsumer(new Slf4jLogConsumer(LOG))
       .withStartupTimeout(Duration.ofMinutes(2));
   }
 
-  public KeycloakContainer withRealmImport(String realmJsonPath) {
+  public KeycloakContainer withRealmImport(MountableFile realmJsonPath) {
     if (realmJsonPath != null) {
       withCommand("start-dev", "--import-realm")
-        .withFileSystemBind(realmJsonPath, "/opt/keycloak/data/import/realm.json");
+        .withCopyFileToContainer(realmJsonPath, "/opt/keycloak/data/import/realm.json");
+
+      LOG.info("Using realm import file: {}", realmJsonPath);
     }
     return this;
   }

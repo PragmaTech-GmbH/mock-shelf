@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.DynamicPropertyRegistrar;
 import org.testcontainers.activemq.ArtemisContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.MountableFile;
 
 import static org.testcontainers.utility.DockerImageName.parse;
 
@@ -17,8 +18,7 @@ class TestcontainersConfiguration {
 
   @Bean
   ArtemisContainer artemisContainer() {
-    return new ArtemisContainer(parse("rmohr/activemq:5.15.9")
-      .asCompatibleSubstituteFor("apache/activemq-artemis"))
+    return new ArtemisContainer(parse("apache/activemq-artemis:2.40.0"))
       .withExposedPorts(61616, 8161)
       .withPassword("activemq")
       .withUser("activemq");
@@ -34,10 +34,11 @@ class TestcontainersConfiguration {
   }
 
   @Bean
-  // @ServiceConnection
+    // @ServiceConnection
   KeycloakContainer keycloakContainer() {
     return new KeycloakContainer()
-      .withRealmImport("/docker/keycloak/spring-realm.json");
+      .withRealm("spring")
+      .withRealmImport(MountableFile.forClasspathResource("/docker/keycloak/spring-realm.json"));
   }
 
   @Bean
