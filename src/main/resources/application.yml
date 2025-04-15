@@ -42,8 +42,8 @@ spring:
   # ActiveMQ configuration
   activemq:
     broker-url: ${ACTIVEMQ_BROKER_URL:tcp://localhost:61616}
-    user: ${ACTIVEMQ_USER:admin}
-    password: ${ACTIVEMQ_PASSWORD:admin}
+    user: ${ACTIVEMQ_USER:artemis}
+    password: ${ACTIVEMQ_PASSWORD:artemis}
 
   # Email configuration
   mail:

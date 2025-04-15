@@ -3,6 +3,7 @@ package de.rieckpil;
 import de.rieckpil.library.setup.KeycloakContainer;
 import de.rieckpil.library.setup.MailDevContainer;
 import de.rieckpil.library.setup.WireMockContainer;
+import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +18,7 @@ import static org.testcontainers.utility.DockerImageName.parse;
 class TestcontainersConfiguration {
 
   @Bean
+  @RestartScope
   ArtemisContainer artemisContainer() {
     return new ArtemisContainer(parse("apache/activemq-artemis:2.40.0"))
         .withExposedPorts(61616, 8161)
@@ -25,6 +27,7 @@ class TestcontainersConfiguration {
   }
 
   @Bean
+  @RestartScope
   @ServiceConnection
   PostgreSQLContainer<?> postgresContainer() {
     return new PostgreSQLContainer<>(parse("postgres:15"))
@@ -34,6 +37,7 @@ class TestcontainersConfiguration {
   }
 
   @Bean
+  @RestartScope
   @ServiceConnection
   KeycloakContainer keycloakContainer() {
     return new KeycloakContainer()
@@ -42,6 +46,7 @@ class TestcontainersConfiguration {
   }
 
   @Bean
+  @RestartScope
   public DynamicPropertyRegistrar keycloakProperties(KeycloakContainer container) {
     return (properties) -> {
       properties.add(
@@ -52,12 +57,14 @@ class TestcontainersConfiguration {
   }
 
   @Bean
+  @RestartScope
   @ServiceConnection
   WireMockContainer wireMockContainer() {
     return new WireMockContainer();
   }
 
   @Bean
+  @RestartScope
   @ServiceConnection
   MailDevContainer mailDevContainer() {
     return new MailDevContainer();

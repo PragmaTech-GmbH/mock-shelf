@@ -23,8 +23,8 @@ services:
       - "61616:61616"  # JMS
       - "8161:8161"    # Web console
     environment:
-      ACTIVEMQ_ADMIN_LOGIN: admin
-      ACTIVEMQ_ADMIN_PASSWORD: admin
+      ARTEMIS_PASSWORD: artemis
+      ARTEMIS_USER: artemis
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8161"]
       interval: 5s
@@ -41,13 +41,14 @@ services:
       KC_HEALTH_ENABLED: "true"
     ports:
       - "8081:8080"
+      - "9000:9000"
     command:
       - start-dev
       - --import-realm
     volumes:
       - ./src/test/resources/docker/keycloak/spring-realm.json:/opt/keycloak/data/import/spring-realm.json
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health/ready"]
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health/ready"]
       interval: 5s
       timeout: 10s
       retries: 3
