@@ -22,9 +22,9 @@ jobs:
           java-version: 21
           cache: maven
 
-      - name: Start the local environment and verify the application startup
+      - name: Verify local application startup
         run: |
-          docker compose up -d
+          docker compose up -d --wait
           ./mvnw spring-boot:run &
           timeout 180 .github/workflows/health-check.sh 8080
 
